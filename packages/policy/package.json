@@ -1,0 +1,7 @@
+{
+  "name": "@meter/policy",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "@meter/core": "workspace:*" }
+}

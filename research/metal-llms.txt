@@ -1,0 +1,132 @@
+# Metal Developer Docs
+
+- [What is Metal](https://docs.metalntwx.com/start/introduction.md): What Metal is and how its assets, privacy, policy, interoperability, and EVM compatibility fit together
+- [Assets](https://docs.metalntwx.com/start/assets.md): How Metal represents and moves stablecoins and other tokenized financial assets
+- [Programmable Compliance](https://docs.metalntwx.com/start/compliance.md): How institutions enforce payment rules through accounts, receive policy, and private proofs
+- [Private Payments](https://docs.metalntwx.com/start/private-payments.md): How Metal hides payment details while proving authorization, value conservation, and policy compliance
+- [Ethereum Compatibility](https://docs.metalntwx.com/start/ethereum-compatibility.md): What Ethereum developers can reuse on Metal and what changes for assets, gas, policy, and finality
+- [Interoperability](https://docs.metalntwx.com/start/interoperability.md): How Metal coordinates payments and asset movement across networks
+- [Connect to Testnet](https://docs.metalntwx.com/start/connect-to-testnet.md): Create an RPC endpoint, configure cast, and verify the Metal Testnet connection
+- [Make Your First Transfer](https://docs.metalntwx.com/start/make-your-first-transfer.md): Fund a testnet account, send *USDZ, and verify execution and finality
+- [Block Explorer](https://docs.metalntwx.com/start/explorer.md): Inspect your first USDZ transfer
+- [Design a payment integration](https://docs.metalntwx.com/build/prepare/design-a-payment-integration.md): Place Metal transactions and payment verification within an existing payment system
+- [Connect to Metal](https://docs.metalntwx.com/build/prepare/connect-to-metal.md): RPC endpoints and application clients for Metal Testnet
+- [Fund a test account](https://docs.metalntwx.com/build/prepare/fund-a-test-account.md): Testnet tokens for integration development
+- [Estimate and record fees](https://docs.metalntwx.com/build/prepare/estimate-and-record-fees.md): Gas tokens and transaction fees on Metal
+- [Connect a browser wallet](https://docs.metalntwx.com/build/prepare/connect-a-browser-wallet.md): Connect an EIP-1193 wallet and request user-approved Metal transactions
+- [Direct payment](https://docs.metalntwx.com/build/payments/direct-payment.md): Read token balances and send a MIP20 payment
+- [Authorized payment](https://docs.metalntwx.com/build/payments/authorized-payment.md): Collect a signed MIP20 payment or accept an agent's exact x402 payment through a facilitator
+- [Payment from reserved funds](https://docs.metalntwx.com/build/payments/payment-from-reserved-funds.md): Reserve an owner's tokens for a spender, do a payment, and release the remainder
+- [Shielded payment](https://docs.metalntwx.com/build/payments/shielded-payment.md): Integrate shielding, payment acceptance or rejection, expiry recovery, and unshielding with a configured MIP410 pool
+- [Route incoming payments](https://docs.metalntwx.com/build/payments/route-incoming-payments.md): Collect and forward a payment through an explicit application call
+- [Verify and reconcile payments](https://docs.metalntwx.com/build/payments/verify-and-reconcile-payments.md): Match finalized transfers to orders and recover interrupted processing without counting a payment twice
+- [Create and manage a smart account](https://docs.metalntwx.com/build/controls/create-and-manage-a-smart-account.md): Create a smart account, execute approved calls through a relayer, and update its signers
+- [Build a restricted account](https://docs.metalntwx.com/build/controls/restrict-token-transfers.md): Deploy a contract that holds funds and enforces incoming and outgoing transfer rules
+- [Create a MIP20 token](https://docs.metalntwx.com/build/contracts/create-a-mip20-token.md): Token creation and ownership through MIP20Factory
+- [Deploy an application contract](https://docs.metalntwx.com/build/contracts/deploy-an-application-contract.md): An escrow for one payment, built with Solidity and Foundry
+- [Integrate a contract](https://docs.metalntwx.com/build/contracts/integrate-a-contract.md): Read contract state, submit authorized writes, and process finalized events
+- [Schedule a contract call](https://docs.metalntwx.com/build/contracts/schedule-a-contract-call.md): Authorize a future contract call, fund its execution, and verify the result
+- [Use oracle data](https://docs.metalntwx.com/build/data-and-signatures/use-oracle-data.md): Read and validate stored oracle values for applications and contracts
+- [Submit and challenge claims](https://docs.metalntwx.com/build/data-and-signatures/submit-and-challenge-claims.md): Submit objective bonded claims, prove contradictions, and reconcile each participant's funds
+- [Read onchain randomness](https://docs.metalntwx.com/build/data-and-signatures/read-onchain-randomness.md): Select a participant using network randomness and verify the result onchain
+- [Request and verify a threshold signature](https://docs.metalntwx.com/build/data-and-signatures/request-and-verify-a-threshold-signature.md): Request a signature from Metal's validators and verify a document approval
+- [Send messages from Metal](https://docs.metalntwx.com/build/interop/send-messages-from-metal.md): Send a message from Metal and verify its execution on the destination chain
+- [Receive messages on Metal](https://docs.metalntwx.com/build/interop/receive-messages-on-metal.md): Prove a message commitment from a source outbox and deliver its authenticated call on Metal
+- [Bridge assets into Metal](https://docs.metalntwx.com/build/interop/bridge-assets-into-metal.md): Deposit tokens on another chain and receive shielded funds on Metal
+- [Withdraw bridged assets](https://docs.metalntwx.com/build/interop/withdraw-bridged-assets.md): Spend bridged notes, deliver a delayed release, and sweep funds back to an authorized destination
+- [Monitor and recover your integration](https://docs.metalntwx.com/build/operations/monitor-and-recover-your-integration.md): Track chain and application progress, recover interrupted work, and verify database restoration
+- [Architecture](https://docs.metalntwx.com/learn/architecture.md): An introduction to blockchains and how Metal turns transactions into finalized blocks
+- [Token and Account Model](https://docs.metalntwx.com/learn/mip20/token-and-account-model.md): How MIP20 tokens hold public balances, control supply, apply account policy, and qualify for gas payment
+- [Transfers and Authorization](https://docs.metalntwx.com/learn/mip20/transfers-and-authorization.md): How MIP20 transfers are authorized and applied to sender and recipient balances
+- [Send and Receive Policies](https://docs.metalntwx.com/learn/mip20/handlers-and-policy.md): Where MIP20 policy checks run, how they affect transfers, and how FIs configure and combine them
+- [Shielded Payments](https://docs.metalntwx.com/learn/mip410/shielded-payments.md): How MIP410 represents shielded value and verifies shielding, payment initiation, resolution, and unshielding
+- [Notes and Spending](https://docs.metalntwx.com/learn/mip410/notes-and-spending.md): How notes represent value, how spending is authorized, and how the pool tracks note commitments, spends, and input locks
+- [Privacy Guarantees](https://docs.metalntwx.com/learn/mip410/privacy-guarantees.md): What MIP410 hides from public observers and where shielded activity can still be linked
+- [Keys and Addresses](https://docs.metalntwx.com/learn/mip410/key-and-addresses.md): How shielded keys control spending, generate payment addresses, and enable delegated viewing and proving
+- [Roles and Authorization Flow](https://docs.metalntwx.com/learn/mip410/roles-and-authorization.md): Who holds the keys, prepares proofs, and authorizes each MIP410 transaction
+- [Proof and Verification](https://docs.metalntwx.com/learn/mip410/proof-and-verification.md): How verification keys identify circuit rules, how a sender proof is constructed, and how the pool verifies proofs against current state
+- [Privacy-Preserving Policy](https://docs.metalntwx.com/learn/mip410/privacy-preserving-policy.md): How MIP410 verifies an institution's payment rules while keeping its policy and private data hidden
+- [Programmable Compliance](https://docs.metalntwx.com/learn/compliance/programmable-compliance.md): How Metal enforces payment policies through policy contracts, proofs over private data, and signed offchain decisions
+- [Payment Messaging](https://docs.metalntwx.com/learn/compliance/messaging.md): FI-to-FI payment initiation, Travel Rule exchange, and message delivery and authentication
+- [Evidence and Regulatory Access](https://docs.metalntwx.com/learn/compliance/regulatory-access.md): How Metal supports payment audits through recorded outcomes, shielded viewing, and verifiable disclosures
+- [EVM Compatibility and Gas](https://docs.metalntwx.com/learn/eth-and-gas.md): How Metal combines Ethereum tooling with MIP20 gas payment, priority-fee-only pricing, and millisecond blocks.
+- [Light Clients and Messages](https://docs.metalntwx.com/learn/interop/overview.md): How Metal verifies finalized outcomes across blockchains and uses them to authorize contract calls
+- [Trust and Guarantees](https://docs.metalntwx.com/learn/interop/guarantees.md): Why a cross-chain message can be trusted, which source-network assumptions it inherits, and what can prevent delivery
+- [Contract Addresses](https://docs.metalntwx.com/reference/contract-addresses.md): System contract addresses on Metal
+- [Transactions](https://docs.metalntwx.com/reference/network-fundamentals/transactions.md): Supported Ethereum envelopes, Metal's 0x7f transaction type, and transaction admission rules.
+- [Signing and Typed Data](https://docs.metalntwx.com/reference/network-fundamentals/signing.md): EIP-712 domains, type strings, digest boundaries, and authorization rules on Metal
+- [Settlement and Finality](https://docs.metalntwx.com/reference/network-fundamentals/settlement.md): Payment completion conditions, receipt and finality fields, and reconciliation rules
+- [Precompiles](https://docs.metalntwx.com/reference/network-fundamentals/precompiles.md): Addresses, wire formats, and gas behavior for Metal precompiles
+- [Block Headers](https://docs.metalntwx.com/reference/network-fundamentals/block-headers.md): Metal's extended Ethereum header, block hash, and RPC fields
+- [Blob Transactions and Sidecars](https://docs.metalntwx.com/reference/network-fundamentals/blobs.md): Submitting, paying for, and retrieving EIP-7594 blob sidecars on Metal
+- [Block Timestamps](https://docs.metalntwx.com/reference/network-fundamentals/block-timestamps.md): Read Metal's millisecond-precision block time and understand its EVM behavior
+- [Event Catalog](https://docs.metalntwx.com/reference/network-fundamentals/events.md): Events emitted by Metal tokens, registries, shielded payments, and interoperability contracts
+- [MIP20 Contract API](https://docs.metalntwx.com/reference/assets-and-payments/mip20.md): MIP20 metadata, transfers, allowances, authorizations, holds, receive policy, and token ownership
+- [MIP410 API](https://docs.metalntwx.com/reference/assets-and-payments/mip410.md): MIP410 shield, hold, resolution, reclaim, unshield, state, registry, and administration interfaces
+- [Key Derivation](https://docs.metalntwx.com/reference/privacy/key-derivation.md): How MIP410 derives spending, viewing, proving, and address capabilities from one wallet seed
+- [Shielded Note](https://docs.metalntwx.com/reference/privacy/shielded-note.md): The private fields of a shielded note, its onchain commitment and the nullifier recorded when it is spent
+- [Shield Circuit](https://docs.metalntwx.com/reference/privacy/shield-circuit.md): How the shield proof binds a public MIP20 deposit to a private shielded note
+- [Shielded Payment Circuits](https://docs.metalntwx.com/reference/privacy/transfer-circuit.md): The sender proof, recipient proof, payment identifiers, and encrypted payloads for a MIP410 shielded payment
+- [Unshield Circuit](https://docs.metalntwx.com/reference/privacy/unshield-circuit.md): How the unshield proof spends notes and releases MIP20 value to a public destination
+- [Circuit Registry](https://docs.metalntwx.com/reference/privacy/circuit-registry.md): Address, content addressing, storage, ABI, and proof wire for CircuitRegistry
+- [Receive Policy](https://docs.metalntwx.com/reference/compliance/receive-policy.md): Choose which MIP20 transfers an account accepts and who can recover refused funds
+- [IVMS Evidence](https://docs.metalntwx.com/reference/compliance/ivms-evidence.md): The standalone Travel Rule precompile format and the private record committed in a MIP410 payment payload
+- [Scheduler](https://docs.metalntwx.com/reference/contracts-and-automation/scheduler.md): Scheduler parameters, escrow accounting, execution outcomes, and encrypted payload formats
+- [Assertions](https://docs.metalntwx.com/reference/data-and-signatures/assertions.md): Bonded claim domains, proof encoding, resolution classes, and payouts
+- [Oracle reports](https://docs.metalntwx.com/reference/data-and-signatures/oracle-reports.md): Certified report fields, verifier configuration, and signature encoding
+- [Finality Certificates](https://docs.metalntwx.com/reference/interop/finality-certificates.md): How to verify Metal state on foreign chains
+- [Cross-Chain Messages](https://docs.metalntwx.com/reference/interop/messages.md): How a contract call on Metal triggers a transaction on foreign chains
+- [Inbound Messages](https://docs.metalntwx.com/reference/interop/inbound-messages.md): Proving and executing source-chain messages on Metal
+- [Light Clients](https://docs.metalntwx.com/reference/interop/light-clients.md): Checkpoint contracts that authenticate cross-chain state roots
+- [Bridge vault and gateway](https://docs.metalntwx.com/reference/interop/bridge.md): Deposit claims, shielded bridge proofs, delayed releases, and claimant-authorized sweeps
+- [TypeScript SDK](https://docs.metalntwx.com/reference/typescript-sdk.md): Build, sign, and broadcast Metal transactions with @metalntwx/metal-ts
+- [Protocol Constants and Limits](https://docs.metalntwx.com/reference/protocol-constants.md): Metal network constants, transaction bounds, and asset limits
+- [Error Codes](https://docs.metalntwx.com/reference/error-codes.md): Transaction admission failures and contract revert reasons across Metal protocol surfaces
+- [Glossary](https://docs.metalntwx.com/reference/glossary.md): Definitions for Metal transaction, asset, policy, finality, settlement, and agent payment terminology
+- [Metal JSON-RPC](https://docs.metalntwx.com/reference/json-rpc/overview.md): Send JSON-RPC requests to Metal's public RPC endpoints on testnet and devnet
+- [Get the chain ID](https://docs.metalntwx.com/reference/json-rpc/chain/get-the-chain-id.md): Returns the chain ID as a hex quantity. Testnet is `0xf951` (63825); devnet is `0x539` (1337). Use this to confirm which network the selected server is on.
+- [Get the latest block number](https://docs.metalntwx.com/reference/json-rpc/chain/get-the-latest-block-number.md): Returns the number of the most recent execution head as a hex quantity.
+- [Get consensus status](https://docs.metalntwx.com/reference/json-rpc/consensus/get-consensus-status.md): Returns the current Simplex epoch, round, leader, execution head, finalized block, and this node's latest signed round. For settlement decisions, require a successful receipt, compare its block number against `finalized.number`, and check that the canonical block at that height matches `receipt.bloc…
+- [Get a finality certificate](https://docs.metalntwx.com/reference/json-rpc/consensus/get-a-finality-certificate.md): Returns the retained Simplex finality certificate and block-header preimage for a finalized block hash. Nodes retain recent certificates, with a default limit of 100,000. Returns `null` when no certificate is retained or the corresponding header cannot be read, such as before finality, during local…
+- [Get node build info](https://docs.metalntwx.com/reference/json-rpc/consensus/get-node-build-info.md): Identifies the running node build. Include this response when reporting a node-specific compatibility or operational issue.
+- [Get gas-token display metadata](https://docs.metalntwx.com/reference/json-rpc/consensus/get-gas-token-display-metadata.md): Returns wallet display metadata for the chain's default MIP20 gas token. This is display metadata only — it does not create a native asset, and transactions must still set `value` to `0`.
+- [Get a block by number](https://docs.metalntwx.com/reference/json-rpc/blocks/get-a-block-by-number.md): Returns the block for the given selector, or `null` if unknown. The standard Ethereum fields are extended with `timestampMillisPart`, `proposer`, `interopMessageRoot`, `ethereumUpdate`, `validatorSetRoot`, `nextValidatorSetRoot`, and optional `subblockMetadataRoot`. Full timestamp in milliseconds =…
+- [Get a block by hash](https://docs.metalntwx.com/reference/json-rpc/blocks/get-a-block-by-hash.md): Returns the block for the given hash, or `null` if unknown. The standard Ethereum fields are extended with `timestampMillisPart`, `proposer`, `interopMessageRoot`, `ethereumUpdate`, `validatorSetRoot`, `nextValidatorSetRoot`, and optional `subblockMetadataRoot`. Full timestamp in milliseconds = `tim…
+- [Get retained blob sidecars](https://docs.metalntwx.com/reference/json-rpc/blocks/get-retained-blob-sidecars.md): Returns the complete verified EIP-7594 sidecar bundle for a canonical finalized execution block hash. A null result also covers unknown, noncanonical, unfinalized, blob-free, or pruned blocks. Clients must verify the blobs and commitments against the ordered versioned hashes in the block transaction…
+- [Get gas-token balance](https://docs.metalntwx.com/reference/json-rpc/state/get-gas-token-balance.md): Returns the account's balance in the chain's default MIP20 gas token. Metal has no native asset, so the method does not report ETH. For any other token, call the MIP20 contract's `balanceOf` via `eth_call`.
+- [Get account nonce](https://docs.metalntwx.com/reference/json-rpc/state/get-account-nonce.md): Returns the number of transactions sent from the address, as a hex quantity. Use the `"pending"` selector to pick the next nonce for a new transaction.
+- [Get contract code](https://docs.metalntwx.com/reference/json-rpc/state/get-contract-code.md): Returns the deployed bytecode at the address, or `0x` if none.
+- [Get a storage slot](https://docs.metalntwx.com/reference/json-rpc/state/get-a-storage-slot.md): Returns the value of the storage slot at the given position for the address.
+- [Get account and storage proofs](https://docs.metalntwx.com/reference/json-rpc/state/get-account-and-storage-proofs.md): Returns EIP-1186 account and storage proofs against the selected block state root. Proof availability depends on the node retaining that state. The balance field is the native EVM account balance, not the default MIP20 balance returned by Metal eth_getBalance. To prove a MIP20 balance, query the tok…
+- [Call a contract (read-only)](https://docs.metalntwx.com/reference/json-rpc/state/call-a-contract-read-only.md): Executes a call against the selected block's state without creating a transaction. Use this for MIP20 `balanceOf` and other view functions. `value` must be `0` — Metal has no native asset.
+- [Estimate gas](https://docs.metalntwx.com/reference/json-rpc/gas/estimate-gas.md): Returns an estimate of the gas needed for the call or transaction, as a hex quantity.
+- [Get the gas price](https://docs.metalntwx.com/reference/json-rpc/gas/get-the-gas-price.md): Returns `0x1` — one gas-token base unit per gas. Metal prices gas in the transaction's MIP20 gas token rather than a native asset.
+- [Get the max priority fee](https://docs.metalntwx.com/reference/json-rpc/gas/get-the-max-priority-fee.md): Returns `0x1`, in gas-token base units per gas.
+- [Get fee history](https://docs.metalntwx.com/reference/json-rpc/gas/get-fee-history.md): Reports zero base fees and priority-fee rewards in MIP20 base units, so EIP-1559 wallets can quote transactions against Metal's gas model.
+- [Submit a raw transaction](https://docs.metalntwx.com/reference/json-rpc/transactions/submit-a-raw-transaction.md): Submits a signed raw transaction. Admission applies Metal envelope, chain ID, value (`0` only), gas-token, fee, affordability, nonce, and replacement checks, and failures come back as JSON-RPC errors with a specific message. Replace the placeholder param with your signed transaction bytes before sen…
+- [Get a transaction by hash](https://docs.metalntwx.com/reference/json-rpc/transactions/get-a-transaction-by-hash.md): Returns the transaction, or `null` if the hash is unknown.
+- [Get a transaction receipt](https://docs.metalntwx.com/reference/json-rpc/transactions/get-a-transaction-receipt.md): Returns the receipt, or `null` if this endpoint has no receipt for the transaction yet. Require a successful receipt and compare its block number against `consensus_status.finalized.number`; then check that the canonical block at that height matches `receipt.blockHash` before treating the result as…
+- [Query event logs](https://docs.metalntwx.com/reference/json-rpc/logs/query-event-logs.md): Returns logs matching the filter. Constrain `fromBlock`/`toBlock` (or pass `blockHash`) and filter by `address` and `topics` to keep queries fast.
+- [List pending MIP20 transactions](https://docs.metalntwx.com/reference/json-rpc/mip20/list-pending-mip20-transactions.md): Returns the hashes of pending `0x7f` (MIP20) transactions currently in the node's pool.
+- [Get MIP20 gas for a transaction](https://docs.metalntwx.com/reference/json-rpc/mip20/get-mip20-gas-for-a-transaction.md): Returns the gas token and fee fields for a mined `0x7f` transaction — information standard Ethereum receipts cannot represent. Returns `null` if the hash is unknown or the transaction is not MIP20.
+- [Get MIP20 gas for a block](https://docs.metalntwx.com/reference/json-rpc/mip20/get-mip20-gas-for-a-block.md): Returns per-token gas totals and `0x7f` transaction details for a block. Returns `null` if the block is unknown.
+- [Quickstart: Set Up with Your Agent](https://docs.metalntwx.com/agents/quickstart.md): Point your coding agent at instructions to have it set up `metal-agent`, fund its key on testnet and make its first payment on Metal
+- [x402 on Metal](https://docs.metalntwx.com/agents/x402-on-metal.md): x402 payments on Metal settle in *USDZ with the facilitator paying the gas, as standard exact payments or per call through clearing
+- [Buyer Quickstart: Pay for an API](https://docs.metalntwx.com/agents/quickstart-pay.md): Install the metal-agent CLI, create and fund the agent's key on testnet, and make a paid request that settles on Metal
+- [Mandates](https://docs.metalntwx.com/agents/mandates.md): How an agent pays from its owner's account: limits the account enforces on chain, a credential the agent carries, and payments that can be checked against it
+- [Pay Under Spending Limits](https://docs.metalntwx.com/agents/spending-limits.md): An agent pays from its owner's account within limits the owner set: who it may pay, how much per payment, and how much in total
+- [Send a Direct Payout](https://docs.metalntwx.com/agents/payouts.md): Pay suppliers, contractors or your own accounts under a mandate, with no seller on the other end: the agent signs the transfer and the facilitator submits it
+- [Seller Quickstart: Accept Agent Payments](https://docs.metalntwx.com/agents/quickstart-accept.md): Charge for a route in an Express service with the official x402 middleware, settle through Metal's facilitator, and receive a paid request
+- [Require a Signed Order](https://docs.metalntwx.com/agents/require-signed-order.md): Require a second signature on a route, the agent's own over the order it placed with you, and keep it as proof the agent agreed to that exact purchase
+- [Offer Pay-per-Call Clearing](https://docs.metalntwx.com/agents/clearing.md): Charge per request below a transaction's cost: the payer deposits once and signs each payment off chain, and one deposit pays any seller that offers clearing
+- [metal-agent Reference](https://docs.metalntwx.com/agents/metal-agent.md): Every metal-agent command, its flags and what it prints, the MCP server's tools, and what a mandate enforces
+- [Facilitator](https://docs.metalntwx.com/agents/facilitator.md): Metal's hosted x402 facilitator: one URL that verifies and settles a seller's payments
+- [RPC Endpoints](https://docs.metalntwx.com/network/endpoints.md): Create an RPC endpoint of your own in the Metal console, or let an agent buy one over x402: a URL that is its own credential, serves JSON-RPC over HTTP, and draws on prepaid credit
+- [Credits](https://docs.metalntwx.com/network/credits.md): RPC is prepaid in USD and drawn down per request at a rate by method; top up with a card, or let an agent top up over x402
+
+## OpenAPI Specs
+
+- [json-rpc](/reference/json-rpc/json-rpc.json)
+
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

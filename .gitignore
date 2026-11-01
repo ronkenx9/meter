@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+!.env.example
+runs/
+wallets/
+*.sqlite
+*.sqlite-*
+.unlazy/
+.unlazy-hook-state.json
+.claude/settings.local.json
+coverage/
+dist/
