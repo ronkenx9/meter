@@ -1,6 +1,6 @@
 # Gates: METER day-0 scaffold (no keys needed)
 
-OWNS: package.json, pnpm-workspace.yaml, tsconfig.json, vitest.config.ts, .gitignore, .env.example, packages/core/**, packages/policy/**, packages/metal/**, scenario/**, scripts/**, research/metal-supported.json
+OWNS: package.json, pnpm-workspace.yaml, tsconfig.json, vitest.config.ts, .gitignore, .env.example, packages/core/**, packages/policy/**, packages/metal/**, scenario/**, scripts/**, research/metal-supported.json, packages/airwallex/**, research/airwallex-probe.json
 
 Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, pure money-rule policy, and verified access to Metal's public facilitator and SDK, ready for the Airwallex and Metal probes once keys exist.
 
@@ -34,3 +34,10 @@ Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, p
   EXPECT: METAL_SDK_OK
   CWD: packages/metal
   EVIDENCE: automatic-evidence=v1; definition-sha256=2fc3249d0db71003db1c08d26e8a60fd089cc92c44af6153da28ee3b90a12a3f; exit=0; EXPECT=matched; output-sha256=c0fcddb628c455bcfb1de4d7e80c6983e1636a19f84ac91af9ecd6022f1f1bfd; output-bytes=91; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter/packages/metal; path=a97eeaa5ee85/23 entries
+
+## Day 1: Airwallex card holds (live sandbox)
+
+- [x] G7: a customer-approved pre-auth hold was raised, partially captured once, refused a second capture and an over-hold capture, and a second hold was cancelled, confirmed against live Airwallex state
+  CHECK: node --env-file=.env packages/airwallex/scripts/check-probe.ts
+  EXPECT: AIRWALLEX_HOLD_EVIDENCE_OK
+  EVIDENCE: automatic-evidence=v1; definition-sha256=d3342f81f1a74d039f6dede4da40ba2900b55ba7766ab13756bd2a7494201011; exit=0; EXPECT=matched; output-sha256=6e58ae309a7abc3fe87ef20a068e085e38b6075b1525f98c8b3feac9b6c2de13; output-bytes=115; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries

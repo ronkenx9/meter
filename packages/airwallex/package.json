@@ -1,0 +1,7 @@
+{
+  "name": "@meter/airwallex",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "@meter/core": "workspace:*" }
+}

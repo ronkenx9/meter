@@ -1,0 +1,100 @@
+{
+  "ranAt": "2026-11-01T20:12:13.455Z",
+  "confirmedVia": "hosted card element (browser)",
+  "card": "4035501000000008 (sandbox test card)",
+  "steps": [
+    {
+      "step": "tab1 approved hold $1.00 (hosted card page)",
+      "ok": true,
+      "id": "int_sgpvb7qw4hnrjtq0ki1",
+      "status": "REQUIRES_CAPTURE",
+      "amount": 1,
+      "captured_amount": 0,
+      "authorized_cents": 100,
+      "attempt_status": "AUTHORIZED",
+      "authorization_type": "pre_auth"
+    },
+    {
+      "step": "tab1 increment to $1.40",
+      "ok": true,
+      "id": "int_sgpvb7qw4hnrjtq0ki1",
+      "status": "REQUIRES_CAPTURE",
+      "amount": 1.4,
+      "captured_amount": 0,
+      "authorized_cents": 140,
+      "attempt_status": "AUTHORIZED",
+      "authorization_type": "pre_auth"
+    },
+    {
+      "step": "tab1 increment to $1.40 again (not above current)",
+      "ok": true,
+      "refused": {
+        "status": 400,
+        "code": "validation_error",
+        "message": "/api/v1/pa/payment_intents/int_sgpvb7qw4hnrjtq0ki1/increment_authorization -> 400 validation_error: Invalid amount, must be greater than previous authorized amount"
+      }
+    },
+    {
+      "step": "tab1 capture $0.37",
+      "ok": true,
+      "id": "int_sgpvb7qw4hnrjtq0ki1",
+      "status": "SUCCEEDED",
+      "amount": 1.4,
+      "captured_amount": 0.37,
+      "authorized_cents": 140,
+      "attempt_status": "CAPTURE_REQUESTED",
+      "authorization_type": "pre_auth"
+    },
+    {
+      "step": "tab1 second capture $0.10",
+      "ok": true,
+      "refused": {
+        "status": 400,
+        "code": "invalid_status_for_operation",
+        "message": "/api/v1/pa/payment_intents/int_sgpvb7qw4hnrjtq0ki1/capture -> 400 invalid_status_for_operation: The PaymentIntent status SUCCEEDED is invalid for operation capture."
+      }
+    },
+    {
+      "step": "tab1 read back",
+      "ok": true,
+      "id": "int_sgpvb7qw4hnrjtq0ki1",
+      "status": "SUCCEEDED",
+      "amount": 1.4,
+      "captured_amount": 0.37,
+      "authorized_cents": 140,
+      "attempt_status": "CAPTURE_REQUESTED",
+      "authorization_type": "pre_auth"
+    },
+    {
+      "step": "tab2 approved hold $0.75 (hosted card page)",
+      "ok": true,
+      "id": "int_sgpvzhfh9hnrjvbqjd8",
+      "status": "REQUIRES_CAPTURE",
+      "amount": 0.75,
+      "captured_amount": 0,
+      "authorized_cents": 75,
+      "attempt_status": "AUTHORIZED",
+      "authorization_type": "pre_auth"
+    },
+    {
+      "step": "tab2 capture above the hold ($0.80)",
+      "ok": true,
+      "refused": {
+        "status": 400,
+        "code": "amount_above_limit",
+        "message": "/api/v1/pa/payment_intents/int_sgpvzhfh9hnrjvbqjd8/capture -> 400 amount_above_limit: The operating amount 0.8 is above the limit 0.75."
+      }
+    },
+    {
+      "step": "tab2 cancel",
+      "ok": true,
+      "id": "int_sgpvzhfh9hnrjvbqjd8",
+      "status": "CANCELLED",
+      "amount": 0.75,
+      "captured_amount": 0,
+      "authorized_cents": 75,
+      "attempt_status": "CANCELLED",
+      "authorization_type": "pre_auth"
+    }
+  ]
+}

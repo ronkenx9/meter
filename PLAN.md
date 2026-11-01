@@ -163,8 +163,10 @@ The model only proposes. `policy/` validates every proposal and rejects any that
 - **`confirm`** with raw card details:
   - Body: `{ request_id, payment_method: { type: "card", card: { number, expiry_month, expiry_year, cvc, name } }, payment_method_options: { card: { authorization_type: "pre_auth", auto_capture: false } } }`.
   - It returns `REQUIRES_CAPTURE`.
-  - **Risk:** in production this "Native API" path needs PCI-DSS ROC compliance and Airwallex review. The day-1 probe checks whether the sandbox accepts it.
-  - **Fallback:** confirm through Airwallex.js hosted card fields in the dashboard's "approve hold" modal. That's a better demo anyway, since the customer approves on screen.
+  - **Settled Nov 1:** the sandbox refuses it ("not enabled for native API access"). Holds are confirmed in the browser through Airwallex.js hosted card fields instead (`packages/airwallex/scripts/approval-server.ts`): `createElement('card', { intent_id, client_secret, currency, authorizationType: 'pre_auth', autoCapture: false })`, then `card.confirm()`. Increment, capture and cancel stay server-side REST. The dashboard's approve-hold modal reuses this.
+  - **Verified live (GATES G7):** a $1.00 pre-auth was raised to $1.40 and captured $0.37 → SUCCEEDED. A repeat increment to the same total was refused (`validation_error`), a second capture was refused (`invalid_status_for_operation`), and a capture above a $0.75 hold was refused (`amount_above_limit`). A $0.75 hold was cancelled → CANCELLED.
+  - **Sandbox account:** Payments only works on the US business "New Business Sandbox"; the HK one has no Payments.
+  - **Browser automation note:** the hosted field needs one click to wake and a second to focus, and drops fast keystrokes, so type in 4-digit chunks.
 - **Hold lifetime:** about 7 days for a standard authorization, up to 30 with `pre_auth` (Mastercard; Visa only for some merchant categories). An expired authorization ends `CANCELLED`. Every demo hold closes within minutes, so this only matters for drill 7.
 - **Webhooks:** `payment_intent.requires_capture`, `payment_intent.succeeded`, `payment_intent.cancelled`, `payment_intent.payment_failed`.
 
@@ -217,6 +219,7 @@ Units are converted only in `packages/core/units.ts`, which is property-tested: 
 
 | Risk | Mitigation |
 |---|---|
+| New sandbox business has online Payments off: every intent create returns `configuration_error`, and no payment methods are listed (seen Nov 1) | Owner activates Payments and Cards in the sandbox web app; if that can't be self-served, email devhelp@airwallex.com the same day |
 | Increment on a sandbox pre-auth behaves differently from the docs | Probe it on day 1; email devhelp the same day if it fails; fallback is a larger initial hold and showing the agent refusing to exceed it |
 | Clearing throughput (~1 payment per 3 s per wallet) makes the demo slow | Paragraph-sized steps; a job of about 25–40 payments runs in about 2 minutes; three jobs in parallel; the video speeds up the middle with an on-screen clock |
 | 10–20 minute withdraw finality | Dashboard countdown; the video cuts across it; a later run shows the claim |
