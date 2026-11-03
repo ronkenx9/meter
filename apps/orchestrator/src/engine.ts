@@ -68,6 +68,10 @@ export interface RunResult {
 
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
+const DEPOSIT_TRIES = 3;
+const OUTAGE_TRIES = 6;
+const isTransient = (e: unknown) => /fetch failed|timeout|send the request again/i.test(String(e));
+
 export class Engine {
   private readonly d: EngineDeps;
   private readonly sleep: (ms: number) => Promise<void>;
@@ -214,12 +218,29 @@ export class Engine {
     job.inFlight = millionths(job.inFlight + amount);
     const done = this.deposits.then(async () => {
       const t = Date.now();
-      await job.wallet.deposit(amount);
+      for (let attempt = 1; ; attempt++) {
+        try {
+          await job.wallet.deposit(amount);
+          break;
+        } catch (e) {
+          this.emit("float.deposit_failed", job.spec.id, { amount: formatUsdz(amount), attempt, error: String(e).slice(0, 300) });
+          // It may have landed, so sending it again could pay twice. It stays unaccounted, and reconciliation says so.
+          if (/outcome is unknown/.test(String(e))) return;
+          if (attempt < DEPOSIT_TRIES) {
+            await this.sleep(this.d.depositRetryMs ?? 5000);
+            continue;
+          }
+          // It never reached the job, so it is back in the reserve and the next plan sees the true figures.
+          this.reserve = millionths(this.reserve + amount);
+          job.inFlight = millionths(job.inFlight - amount);
+          return;
+        }
+      }
       job.inFlight = millionths(job.inFlight - amount);
       job.money = { ...job.money, deposited: millionths(job.money.deposited + amount) };
       this.emit("float.deposited", job.spec.id, { amount: formatUsdz(amount), reason, deposited: formatUsdz(job.money.deposited), reserve: formatUsdz(this.reserve), ms: Date.now() - t });
     });
-    this.deposits = done.catch(() => undefined);
+    this.deposits = done;
     return done;
   }
 
@@ -255,15 +276,33 @@ export class Engine {
           continue;
         }
 
-        const url = this.d.market.url(providerId, { job: job.spec.id, step: `${step.kind}-${step.index}`, attempt: String(job.headFailures) });
-        const outcome = await job.wallet.pay(url);
+        const url = this.d.market.url(providerId, { job: job.spec.id, step: `${step.kind}-${step.index}`, of: String(job.paragraphsTotal), attempt: String(job.headFailures) });
+        const outcome = await this.retrying("step.retry", job, () => job.wallet.pay(url), isTransient);
         if (!(await this.handleOutcome(job, step, providerId, outcome))) break;
         this.maybeShock();
       }
     } catch (e) {
       this.emit("job.failed", job.spec.id, { error: String(e) });
     }
-    await this.close(job);
+    try {
+      await this.close(job);
+    } catch (e) {
+      // The hold stays open for a person, and the other jobs still close.
+      this.emit("close.blocked", job.spec.id, { reason: "airwallex_unreachable", detail: String(e).slice(0, 300) });
+    }
+  }
+
+  /** Waits out a brief outage. Only for calls that are safe to send again. */
+  private async retrying<T>(event: string, job: Job, call: () => Promise<T>, canRetry: (e: unknown) => boolean = () => true): Promise<T> {
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await call();
+      } catch (e) {
+        if (attempt >= OUTAGE_TRIES || !canRetry(e)) throw e;
+        this.emit(event, job.spec.id, { attempt, error: String(e).slice(0, 200) });
+        await this.sleep(this.d.depositRetryMs ?? 5000);
+      }
+    }
   }
 
   /** The cheap default is the job's route; the planner may pay up for a paragraph that matters. */
@@ -302,7 +341,9 @@ export class Engine {
           job.headFailures = 0;
           this.doneSteps++;
           if (step.kind === "model") job.paragraphsDone++;
-          job.output.push(textOf(outcome.body));
+          const text = textOf(outcome.body);
+          job.output.push(text);
+          this.emit("report.text", id, { step: `${step.kind}-${step.index}`, provider: providerId, text });
           return true;
         }
         // It still cost its price. Try once more, then give up on this step rather than burn the budget.
@@ -404,6 +445,7 @@ export class Engine {
     });
     this.emit("plan.revised", null, {
       reason,
+      planner: this.d.planner.lastPlan ?? { source: "rules" },
       reserve: formatUsdz(this.reserve),
       decisions: verdicts.map((v) => ({ ...describe(v.proposal), accepted: v.accepted, ...(v.accepted ? {} : { refused: v.reason }) })),
     });
@@ -475,14 +517,15 @@ export class Engine {
       return;
     }
     if (result.action.kind === "cancel") {
-      const r = await this.d.holds.cancel(job.intentId!, "job paid for nothing");
+      const r = await this.retrying("close.retry", job, () => this.d.holds.cancel(job.intentId!, "job paid for nothing"));
       job.money = { ...job.money, cancelled: true };
       this.move(job, "cancelled");
       this.emit("hold.cancelled", job.spec.id, { intentId: job.intentId, status: r.status });
       return;
     }
     this.move(job, "capturing");
-    const r = await this.d.holds.capture(job.intentId!, result.action.amount);
+    const { amount } = result.action;
+    const r = await this.retrying("close.retry", job, () => this.d.holds.capture(job.intentId!, amount));
     job.money = { ...job.money, captured: r.captured };
     this.move(job, "captured");
     this.emit("hold.captured", job.spec.id, { intentId: job.intentId, captured: formatUsd(r.captured), authorized: formatUsd(job.money.authorized), status: r.status, walletSpent: formatUsdz(job.money.spent) });
@@ -492,6 +535,12 @@ export class Engine {
   private async reconcile(): Promise<boolean> {
     let ok = true;
     const all = [...this.jobs.values()];
+    // Every dollar of float is in the reserve or in a job's wallet. Anything else is money the books lost.
+    await this.deposits;
+    const accounted = millionths(this.reserve + sumMillionths(all.map((j) => j.money.deposited)));
+    const floatMatch = accounted === this.d.scenario.float;
+    ok &&= floatMatch;
+    this.emit("reconcile.float", null, { float: formatUsdz(this.d.scenario.float), accounted: formatUsdz(accounted), match: floatMatch });
     for (const job of all) {
       if (job.money.captured === null) continue;
       const paid = sumMillionths((await job.wallet.payments()).map((p) => p.amount));

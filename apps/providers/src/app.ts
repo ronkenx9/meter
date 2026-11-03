@@ -94,9 +94,17 @@ export async function createMarket({ scenario, walletRoot, writer = standIn }: M
         p.dropNext = false;
         return void res.status(503).json({ error: "provider failed after payment" });
       }
-      await sleep(p.latencyMs);
+      const started = Date.now();
       const query = new URL(req.originalUrl, "http://x").searchParams;
-      res.json({ provider: p.id, kind: p.kind, tier: p.tier ?? null, text: await writer(p, query) });
+      try {
+        const text = await writer(p, query);
+        // latencyMs is the slowest this provider answers; a slowdown shock stretches a fast model call to it.
+        await sleep(Math.max(0, p.latencyMs - (Date.now() - started)));
+        res.json({ provider: p.id, kind: p.kind, tier: p.tier ?? null, text });
+      } catch (e) {
+        // The payment already happened, so this is a real failed-after-payment, which the engine handles.
+        res.status(502).json({ error: "provider could not produce an answer", detail: String((e as Error).message).slice(0, 200) });
+      }
     });
   }
 

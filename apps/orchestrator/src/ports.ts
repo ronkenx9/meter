@@ -115,7 +115,16 @@ export interface StepJudgment {
   reason: string;
 }
 
+export interface PlanSource {
+  source: "model" | "rules";
+  model?: string;
+  summary?: string;
+  note?: string;
+}
+
 export interface PlannerPort {
+  /** Who made the last plan; recorded in the run log. */
+  lastPlan?: PlanSource;
   /** Revise the plan. Proposals are checked against the money rules before anything moves. */
   propose(snapshot: Snapshot): Promise<Proposal[]>;
   /**

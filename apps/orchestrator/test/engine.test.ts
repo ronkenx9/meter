@@ -254,3 +254,103 @@ describe("failures", () => {
     assertInvariants(r, scenario, holds, wallets);
   });
 });
+
+describe("a deposit that fails", () => {
+  function failing(fails: (amount: bigint, call: number) => boolean) {
+    const r = rig();
+    const market = new SimMarket(scenario);
+    let calls = 0;
+    const log = new EventLog(":memory:");
+    const engine = new Engine({
+      scenario,
+      market,
+      holds: r.holds,
+      approvals: r.approvals,
+      planner: new RulePlanner(),
+      log,
+      wallet: async (id) => {
+        const w = new SimWallet(market, scenario.maxPayment, id);
+        const deposit = w.deposit.bind(w);
+        w.deposit = async (amount) => {
+          if (fails(amount, ++calls)) throw new Error("chain said no");
+          return deposit(amount);
+        };
+        return w;
+      },
+      sleep: async () => undefined,
+      depositRetryMs: 0,
+    });
+    return { engine, log };
+  }
+
+  it("retries, and a brief failure costs nothing", async () => {
+    const { engine, log } = failing((_a, call) => call === 4);
+    const res = await engine.run();
+    expect(types(log)).toContain("float.deposit_failed");
+    expect(res.reconciled).toBe(true);
+  });
+
+  it("returns to the reserve when it never lands, so the books still balance and say so", async () => {
+    const { engine, log } = failing((_a, call) => call > 3);
+    const res = await engine.run();
+    expect(types(log)).toContain("float.deposit_failed");
+    const check = log.all().find((e) => e.type === "reconcile.float")!;
+    expect(check.data.match).toBe(true);
+    expect(res.reconciled).toBe(true);
+    expect(res.reserve + sumMillionths(res.jobs.map((j) => j.deposited))).toBe(scenario.float);
+  });
+});
+
+describe("a brief outage", () => {
+  it("a payment that can't reach the network is sent again, and the job finishes", async () => {
+    const r = rig();
+    const engine = r.engine;
+    let failed = false;
+    const wrap = (w: SimWallet) => {
+      const pay = w.pay.bind(w);
+      w.pay = async (url: string) => {
+        if (!failed) {
+          failed = true;
+          throw new TypeError("fetch failed");
+        }
+        return pay(url);
+      };
+    };
+    const orig = (engine as unknown as { d: { wallet: (id: string) => Promise<SimWallet> } }).d;
+    const open = orig.wallet;
+    orig.wallet = async (id) => {
+      const w = await open(id);
+      wrap(w);
+      return w;
+    };
+    const res = await engine.run();
+    expect(types(r.log)).toContain("step.retry");
+    expect(types(r.log)).not.toContain("job.failed");
+    expect(res.reconciled).toBe(true);
+  });
+
+  it("a capture that fails is sent again, and a capture that never lands leaves the other jobs closed", async () => {
+    const r = rig();
+    const capture = r.holds.capture.bind(r.holds);
+    let calls = 0;
+    r.holds.capture = async (id, amount) => {
+      if (++calls === 1) throw new TypeError("fetch failed");
+      return capture(id, amount);
+    };
+    const res = await r.engine.run();
+    expect(types(r.log)).toContain("close.retry");
+    expect(res.jobs.every((j) => j.captured !== null)).toBe(true);
+
+    const down = rig();
+    const ok = down.holds.capture.bind(down.holds);
+    let first: string | null = null;
+    down.holds.capture = async (id, amount) => {
+      first ??= id;
+      if (id === first) throw new TypeError("fetch failed");
+      return ok(id, amount);
+    };
+    const after = await down.engine.run();
+    expect(types(down.log)).toContain("close.blocked");
+    expect(after.jobs.filter((j) => j.captured !== null).length).toBe(2);
+  });
+});

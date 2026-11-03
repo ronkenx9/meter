@@ -2,15 +2,17 @@
 // Live mode needs Airwallex and Metal keys (see README). Sim mode needs nothing: same engine, same rules, no network.
 import { mkdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { type ModelClient, createModelClient, pingModel } from "@meter/ai";
 import { AirwallexClient } from "@meter/airwallex";
 import { type Scenario, formatUsd, formatUsdz, loadScenario, parseUsdz } from "@meter/core";
 import { EventLog } from "@meter/ledger";
 import { JobWallet, readDeployment } from "@meter/metal";
-import { createMarket } from "@meter/providers";
+import { createClaudeWriter, createMarket } from "@meter/providers";
 import express, { type Request, type Response } from "express";
 import { privateKeyToAccount } from "viem/accounts";
 import { Engine, type RunResult } from "./engine.ts";
 import { LiveHolds, LiveMarket, WebApprovals } from "./live.ts";
+import { ClaudePlanner } from "./claude-planner.ts";
 import { RulePlanner } from "./planner.ts";
 import type { HoldsPort, MarketPort } from "./ports.ts";
 import { SimHolds, SimMarket, SimWallet } from "./sim.ts";
@@ -64,7 +66,19 @@ async function startLive(scenario: Scenario, shock: boolean): Promise<Run> {
   const rpcUrl = process.env.METAL_RPC_URL!;
   const operator = privateKeyToAccount(process.env.METAL_OPERATOR_KEY as `0x${string}`);
   const deployment = await readDeployment();
-  const providers = await createMarket({ scenario, walletRoot: `${dir}/providers` });
+  // Find a bad key now, before any money moves. The run still works without Claude, and says so.
+  let ai: ModelClient | null = createModelClient();
+  let aiNote: string | null = ai ? null : "ANTHROPIC_API_KEY is not set";
+  if (ai) {
+    try {
+      await pingModel(ai);
+    } catch (e) {
+      aiNote = String((e as Error).message).slice(0, 200);
+      ai = null;
+    }
+  }
+  log.append("ai.status", null, ai ? { planner: "claude", writer: "claude" } : { planner: "rules", writer: "stand-in", reason: aiNote });
+  const providers = await createMarket({ scenario, walletRoot: `${dir}/providers`, ...(ai ? { writer: createClaudeWriter(ai, scenario) } : {}) });
   const { baseUrl } = await providers.listen(0);
   const market = new LiveMarket(providers, baseUrl);
   const holds = new LiveHolds(AirwallexClient.fromEnv(), id);
@@ -75,7 +89,7 @@ async function startLive(scenario: Scenario, shock: boolean): Promise<Run> {
     market,
     holds,
     approvals,
-    planner: new RulePlanner(),
+    planner: ai ? new ClaudePlanner(ai) : new RulePlanner(),
     log,
     wallet: (jobId) => JobWallet.open({ directory: `${dir}/jobs/${jobId}`, rpcUrl, operator, deployment, maxPayment: scenario.maxPayment }),
     shockAt: shock ? scenario.shock.atFractionOfRun : null,

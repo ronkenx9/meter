@@ -64,6 +64,7 @@ export interface PendingHold {
 export class LiveHolds implements HoldsPort {
   private readonly awx: AirwallexClient;
   private readonly runId: string;
+  private readonly captureIds = new Map<string, string>();
   private readonly waiting = new Map<string, { pending: PendingHold; resolve: (r: HoldReceipt) => void; reject: (e: Error) => void }>();
   onAwaiting: ((p: PendingHold) => void) | null = null;
 
@@ -124,7 +125,10 @@ export class LiveHolds implements HoldsPort {
   }
 
   async capture(intentId: string, amount: Cents) {
-    const pi = await captureHold(this.awx, intentId, { amount, requestId: randomUUID() });
+    // The same id on every try, so a retry after a lost answer can't become a second capture.
+    const requestId = this.captureIds.get(intentId) ?? randomUUID();
+    this.captureIds.set(intentId, requestId);
+    const pi = await captureHold(this.awx, intentId, { amount, requestId });
     return { ...toReceipt(pi), captured: parseUsd(pi.captured_amount ?? 0) };
   }
 

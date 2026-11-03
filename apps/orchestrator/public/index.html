@@ -82,6 +82,16 @@
   .card { padding:10px 12px; background:var(--panel-2); border-radius:8px; }
   .card .when { color:var(--faint); font:11px/1 var(--mono); }
   .card .why { margin:5px 0 8px; font-weight:500; }
+  .card .who { color:var(--muted); font:11px/1.4 var(--mono); margin:-4px 0 8px; }
+  .card .sum { color:var(--muted); font-size:12.5px; margin:0 0 8px; }
+  .snippet { margin:10px 0 0; padding-top:10px; border-top:1px solid var(--line); font-size:12.5px; color:var(--muted); display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; min-height:0; }
+  .read { margin-top:10px; width:100%; font-size:12.5px; }
+  dialog { background:var(--panel); color:var(--text); border:1px solid var(--line-strong); border-radius:12px; padding:0; width:min(680px,calc(100vw - 32px)); max-height:80vh; }
+  dialog::backdrop { background:rgba(0,0,0,.6); }
+  .report-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--panel); }
+  .report-head h2 { margin:0; font:700 15px/1.2 var(--display); }
+  .report-body { padding:6px 18px 18px; font-size:14.5px; line-height:1.6; }
+  .report-body p { margin:12px 0; } .report-body small { display:block; color:var(--faint); font:11px/1 var(--mono); margin-bottom:3px; }
   .dec { display:grid; grid-template-columns:62px 1fr; gap:2px 8px; padding:6px 0 0; font-size:12.5px; border-top:1px solid var(--line); margin-top:6px; }
   .verdict { font:500 11px/1.6 var(--mono); }
   .verdict.yes { color:var(--ok); } .verdict.no { color:var(--coral); }
@@ -134,12 +144,13 @@
           <button class="btn" data-drill="reprice-over-cap" type="button">Reprice over cap</button>
         </div></section>
         <section class="panel"><h2>Market<span class="sub">prices come from each next 402 offer</span></h2><table><thead><tr><th>Provider</th><th class="r">Price</th><th class="r">Speed</th></tr></thead><tbody id="offers"></tbody></table></section>
-        <section class="panel"><h2>Decisions<span class="sub">agent proposes, code decides</span></h2><div class="feed" id="feed"><div class="empty">Nothing to decide yet.</div></div></section>
+        <section class="panel"><h2>Decisions<span class="sub">proposed, then checked by code</span></h2><div class="feed" id="feed"><div class="empty">Nothing to decide yet.</div></div></section>
         <section class="panel"><h2>Proof<span class="sub">card = wallet = settlements</span></h2><div class="proof" id="proof"><div class="empty">Appears as jobs close.</div></div></section>
       </aside>
     </main>
   </div>
 </div>
+<dialog id="report"><div class="report-head"><h2 id="report-title"></h2><button class="btn" id="report-close" type="button">Close</button></div><div class="report-body" id="report-body"></div></dialog>
 <script>
   const $ = (id) => document.getElementById(id);
   const el = (tag, attrs = {}, ...kids) => {
@@ -157,6 +168,7 @@
   const cards = new Map();
   const pays = new Map();
   const proofs = { jobs: new Map(), providers: new Map(), tx: [] };
+  const reports = new Map();
   let source = null, seen = 0, state = null, timer = null;
 
   function jobCard(job) {
@@ -173,9 +185,12 @@
     const kv = el("dl", { class: "kv" });
     const list = el("ul", { class: "pays" });
     const slot = el("div");
-    root.append(el("div", { class: "job-top" }, el("h3", { text: job.customer }), stateEl), el("div", { class: "brief", text: job.brief }), meter, el("div", { class: "limit" }, track), row, slot, kv, list);
+    const snippet = el("p", { class: "snippet", hidden: "" });
+    const read = el("button", { class: "btn read", type: "button", text: "Read the report", hidden: "" });
+    read.onclick = () => openReport(job);
+    root.append(el("div", { class: "job-top" }, el("h3", { text: job.customer }), stateEl), el("div", { class: "brief", text: job.brief }), meter, el("div", { class: "limit" }, track), row, slot, kv, list, snippet, read);
     $("jobs").append(root);
-    c = { root, meter, stateEl, bar, left, right, kv, list, slot, last: null, frame: false };
+    c = { root, meter, stateEl, bar, left, right, kv, list, slot, snippet, read, last: null, frame: false };
     cards.set(job.id, c);
     return c;
   }
@@ -260,12 +275,21 @@
     for (const j of s.jobs) renderJob(j, s);
   }
 
+  function openReport(job) {
+    $("report-title").textContent = job.customer + ": " + job.brief;
+    $("report-body").replaceChildren(...(reports.get(job.id) || []).map((r) => el("p", {}, el("small", { text: r.step + " · " + r.provider }), document.createTextNode(r.text))));
+    $("report").showModal();
+  }
+  $("report-close").onclick = () => $("report").close();
+
   function addDecision(e) {
     const f = $("feed");
     if (f.querySelector(".empty")) f.replaceChildren();
     const d = e.data.decisions || [];
     if (!d.length) return;
-    const card = el("div", { class: "card" }, el("div", { class: "when", text: new Date(e.at).toLocaleTimeString() }), el("div", { class: "why", text: e.data.reason }));
+    const p = e.data.planner || { source: "rules" };
+    const card = el("div", { class: "card" }, el("div", { class: "when", text: new Date(e.at).toLocaleTimeString() }), el("div", { class: "why", text: e.data.reason }), el("div", { class: "who", text: p.source === "model" ? "Proposed by " + p.model : "Proposed by the rule planner" + (p.note ? " (" + p.note + ")" : "") }));
+    if (p.summary) card.append(el("p", { class: "sum", text: p.summary }));
     const LABEL = { reroute: "Move", grant_reserve: "Fund", ask_hold_raise: "Ask", pause: "Pause" };
     for (const x of d) {
       const head = x.kind === "reroute" ? `Job ${x.job} → ${x.to}` : x.kind === "grant_reserve" ? `Job ${x.job}: ${usd(x.amount)} from reserve` : x.kind === "ask_hold_raise" ? `Customer ${x.job}: raise hold to ${x.newTotal}` : `Job ${x.job}`;
@@ -299,6 +323,16 @@
         while (c.list.children.length > 5) c.list.lastChild.remove();
       }
     }
+    if (e.type === "report.text") {
+      if (!reports.has(e.job)) reports.set(e.job, []);
+      reports.get(e.job).push(e.data);
+      const c = cards.get(e.job);
+      if (c) {
+        c.snippet.textContent = e.data.text;
+        c.snippet.hidden = false;
+        c.read.hidden = false;
+      }
+    }
     if (e.type === "reconcile.job") proofs.jobs.set(e.job, e.data);
     if (e.type === "reconcile.provider") proofs.providers.set(e.data.provider, e.data);
     if (e.type === "float.claimed") proofs.tx.push({ label: `Job ${e.job} float back: ${usd(e.data.amount)}`, tx: e.data.tx });
@@ -312,7 +346,9 @@
   }
 
   async function refresh() {
-    const s = await fetch("/api/state").then((r) => r.json());
+    // The server may be restarting; the next tick picks up where this left off.
+    const s = await fetch("/api/state").then((r) => r.json()).catch(() => null);
+    if (!s) return;
     render(s);
     $("run-live").disabled = $("run-live").disabled || !s.liveReady;
     $("run-live").title = s.liveReady ? "" : "Live mode needs Airwallex and Metal keys in .env";
@@ -330,7 +366,7 @@
     if (!r.ok) return alert((await r.json()).error);
     if (source) source.close();
     source = null; seen = 0;
-    cards.clear(); proofs.jobs.clear(); proofs.providers.clear(); proofs.tx = [];
+    cards.clear(); reports.clear(); proofs.jobs.clear(); proofs.providers.clear(); proofs.tx = [];
     $("jobs").replaceChildren();
     $("feed").replaceChildren(el("div", { class: "empty", text: "Nothing to decide yet." }));
     $("proof").replaceChildren(el("div", { class: "empty", text: "Appears as jobs close." }));

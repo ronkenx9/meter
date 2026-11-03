@@ -8,15 +8,16 @@ Drafted 2026-10-30, day 4 of the build. Sources are listed at the bottom; local 
 
 ## Status (Nov 3)
 
-**Done and verified live (GATES.md 10/10):** Airwallex holds, raise, capture and cancel; real Metal clearing payments on testnet with no owner setup (`packages/metal/scripts/setup-operator.ts` funds a key and buys the RPC endpoint itself); the engine, simulator (72 tests), dashboard with a no-keys sim mode, and a full live Kit 12 run (`research/live-kit12-run.jsonl`): 70 payments, A $0.40, B raised to $0.78 and charged $0.78, C $0.25, all reconciled.
+**Done and verified live (GATES.md 11/11; 96 tests):** Airwallex holds, raise, capture and cancel; real Metal clearing payments on testnet; the full Kit 12 run decided and written by real Claude (`research/live-kit12-run.jsonl`): A $0.31 (14/14), B raised to $0.91 and charged $0.88 (40/40), C $0.25 (10/10), float balanced at $1.50, reconciled, log intact. All 3 plans came from Claude. The earlier rule-planner run is kept as `research/live-kit12-rules-run.jsonl`.
+
+**Known limits:** that run's report text predates the writer learning each paragraph's position, so B's paragraph 20 opens "In closing"; the fix is verified on real Claude (54/54 clean) and any new run carries it. The raise was approved by a script acting as the test customer. A paid $0.01 for one failed attempt (a 502, cause not logged), which is how Kit 12 says a failed request works. A hold page left waiting about an hour can fail with "Authentication failed", most likely an expired client secret; a waiting hold has no timeout yet.
 
 **Left, in order:**
-1. Real AI: providers write real paragraphs and Claude makes the judgment calls (needs `ANTHROPIC_API_KEY`). Until then the "agent" is the rule planner and the text is stand-in.
-2. Drills: lost answer and crash-and-restart; test the dashboard's reprice and fail-after-payment buttons live.
-3. README with setup and proof table, CI.
-4. Demo video under 5 minutes, then submit by Nov 14.
+1. Drills: lost answer and crash-and-restart; test the dashboard's reprice and fail-after-payment buttons live.
+2. README with setup and proof table, CI.
+3. Demo video under 5 minutes (record a fresh run with the writer fix), then submit by Nov 14.
 
-**Measured, differs from the docs:** a payment takes about 7 s per wallet, not 3 s; a full run takes about 6 minutes.
+**Measured, differs from the docs:** a payment takes about 7 s per wallet, not 3 s; a full run with real Claude takes about 11 minutes. Keep the Mac awake: sleep mid-run froze one for 10 minutes.
 
 ## 1. Dates and what to submit
 

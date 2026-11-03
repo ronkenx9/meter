@@ -12,7 +12,7 @@ Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, p
 - [x] G2: every unit and policy test passes, and there are tests to pass
   CHECK: node scripts/gate-tests.mjs
   EXPECT: /TESTS_OK total=\d+ failed=0/
-  EVIDENCE: automatic-evidence=v1; definition-sha256=726e055f9b9a13d31a9505aa568d6be14d687155c10253221889347b586dba93; exit=0; EXPECT=matched; output-sha256=6781f1c6929e4d2e198e15509eaac0d61a3b87fc7a4040dfa3f6cc714e2d7678; output-bytes=37; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=726e055f9b9a13d31a9505aa568d6be14d687155c10253221889347b586dba93; exit=0; EXPECT=matched; output-sha256=2ed0e0e6bb030243b00d64d312e252500dff07b3b91349bbbec39714e4d22c51; output-bytes=37; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries
 
 - [x] G3: scenario/kit12.json matches the numbers in the official Kit 12 brief (parsed from research/builder-guide.md, not copied)
   CHECK: node scripts/check-scenario.mjs
@@ -22,7 +22,7 @@ Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, p
 - [x] G4: .env is git-ignored and no tracked or untracked-unignored file holds a credential-shaped value
   CHECK: node scripts/check-secrets.mjs
   EXPECT: SECRETS_OK
-  EVIDENCE: automatic-evidence=v1; definition-sha256=d5745ed02f7bde11630a9ef2d480f159583fb4976894d83abf957945bee078aa; exit=0; EXPECT=matched; output-sha256=35626fcd199865043e59e8da54efac88214ca4e4fd2c383af7f2e361e22c811a; output-bytes=22; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=d5745ed02f7bde11630a9ef2d480f159583fb4976894d83abf957945bee078aa; exit=0; EXPECT=matched; output-sha256=08fbc3d06cfeb0c3a3d18bec77ac167e208770f73a88d925e557c01dede59122; output-bytes=22; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries
 
 - [x] G5: Metal's testnet facilitator is up and advertises a bajillion clearing deployment on eip155:63825
   CHECK: node scripts/probe-metal.mjs
@@ -56,5 +56,10 @@ Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, p
 
 - [x] G10: the full Kit 12 scenario ran live: three customer holds, the overrun and slowdown, a customer-approved raise spent past the original hold, each capture exactly equal to that job's payments, deposits never past the hold at any moment, reconciled, log intact
   CHECK: node scripts/check-live-evidence.mjs research/live-kit12-run.jsonl && node -e "const L=require('fs').readFileSync('research/live-kit12-run.jsonl','utf8').trim().split('\n').map(JSON.parse);const has=(t,j)=>L.some(e=>e.type===t&&(!j||e.job===j));const cap=L.find(e=>e.type==='hold.captured'&&e.job==='B');if(!has('shock.overrun','B')||!has('shock.slowdown')||!has('job.rerouted')||!has('hold.raised','B')||new Set(L.filter(e=>e.type==='hold.placed').map(e=>e.job)).size!==3||Number(cap.data.captured.slice(1))<=0.75)process.exit(1);console.log('KIT12_LIVE_OK B charged '+cap.data.captured)"
-  EXPECT: KIT12_LIVE_OK B charged $0.7
-  EVIDENCE: automatic-evidence=v1; definition-sha256=9740ae629aaa8caf81a577f9d929d766030e8b10f010f0efe2e69fe4ba7e73fa; exit=0; EXPECT=matched; output-sha256=ec8a7a3fb6091e28ca65b504914ec4570171d6b730d2a74c325780ad26a963b1; output-bytes=81; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries
+  EXPECT: KIT12_LIVE_OK B charged $
+  EVIDENCE: automatic-evidence=v1; definition-sha256=2bbe8ec01e7019328b09a391fb12fb23c079c89449155235e371b4f945fd9403; exit=0; EXPECT=matched; output-sha256=0c166e2cbb29dae12d0f8ee25f77b271310cf73b34ada8b1ff77eff29a9213e8; output-bytes=81; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries
+
+- [x] G11: the recorded Kit 12 run was decided and written by real Claude and was a good run: every plan from the model, all three jobs finished in full, every model tier used, no paragraph describing itself, a customer-approved raise funded after approval, float balanced, reconciled
+  CHECK: node scripts/check-claude-run.mjs research/live-kit12-run.jsonl
+  EXPECT: CLAUDE_RUN_OK
+  EVIDENCE: automatic-evidence=v1; definition-sha256=51fc19f3a0227d2a78f23cbc00c9c605c26586d057d6179bbf31b41935921d3a; exit=0; EXPECT=matched; output-sha256=8ec2eee6342e01feec800bd1ff353a738adeac943f8b9b94c99985dcadc66c48; output-bytes=67; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries

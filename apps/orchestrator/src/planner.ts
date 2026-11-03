@@ -68,15 +68,20 @@ export class RulePlanner implements PlannerPort {
   }
 
   async judgeStep(job: JobView, paragraph: { index: number; total: number }, offers: Offer[], slack: Millionths): Promise<StepJudgment> {
-    // The opening and the conclusion carry the report; pay up for them only while the whole float has room.
-    const key = paragraph.index === 1 || paragraph.index === paragraph.total;
-    const premium = offers.filter((o) => o.kind === "model" && o.latencyMs < SLOW_MS).sort((a, b) => Number(b.price - a.price))[0];
-    if (!key || !premium || premium.id === job.route) return { providerId: null, reason: "ordinary paragraph" };
-    const extra = premium.price - (offers.find((o) => o.id === job.route)?.price ?? 0n);
-    if (slack < extra) return { providerId: null, reason: `paragraph ${paragraph.index} matters, but the float is short by $${dollars(extra - slack)}` };
-    if (job.projected + extra > centsToMillionths(job.authorized)) return { providerId: null, reason: "no room under the customer's hold" };
-    return { providerId: premium.id, reason: `paragraph ${paragraph.index} of ${paragraph.total} is the ${paragraph.index === 1 ? "opening" : "conclusion"}` };
+    // The opening and the conclusion carry the report.
+    if (paragraph.index !== 1 && paragraph.index !== paragraph.total) return { providerId: null, reason: "ordinary paragraph" };
+    return affordablePremium(job, paragraph, offers, slack, `paragraph ${paragraph.index} of ${paragraph.total} is the ${paragraph.index === 1 ? "opening" : "conclusion"}`);
   }
+}
+
+/** A paragraph worth paying up for only gets it while the whole float and this customer's hold have room. */
+export function affordablePremium(job: JobView, paragraph: { index: number }, offers: Offer[], slack: Millionths, why: string): StepJudgment {
+  const premium = offers.filter((o) => o.kind === "model" && o.latencyMs < SLOW_MS).sort((a, b) => Number(b.price - a.price))[0];
+  if (!premium || premium.id === job.route) return { providerId: null, reason: "already on the best provider" };
+  const extra = premium.price - (offers.find((o) => o.id === job.route)?.price ?? 0n);
+  if (slack < extra) return { providerId: null, reason: `paragraph ${paragraph.index} matters, but the float is short by $${dollars(extra - slack)}` };
+  if (job.projected + extra > centsToMillionths(job.authorized)) return { providerId: null, reason: "no room under the customer's hold" };
+  return { providerId: premium.id, reason: why };
 }
 
 function dollars(m: bigint): string {
