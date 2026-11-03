@@ -6,11 +6,23 @@ Drafted 2026-10-30, day 4 of the build. Sources are listed at the bottom; local 
 
 ---
 
+## Status (Nov 3)
+
+**Done and verified live (GATES.md 10/10):** Airwallex holds, raise, capture and cancel; real Metal clearing payments on testnet with no owner setup (`packages/metal/scripts/setup-operator.ts` funds a key and buys the RPC endpoint itself); the engine, simulator (72 tests), dashboard with a no-keys sim mode, and a full live Kit 12 run (`research/live-kit12-run.jsonl`): 70 payments, A $0.40, B raised to $0.78 and charged $0.78, C $0.25, all reconciled.
+
+**Left, in order:**
+1. Real AI: providers write real paragraphs and Claude makes the judgment calls (needs `ANTHROPIC_API_KEY`). Until then the "agent" is the rule planner and the text is stand-in.
+2. Drills: lost answer and crash-and-restart; test the dashboard's reprice and fail-after-payment buttons live.
+3. README with setup and proof table, CI.
+4. Demo video under 5 minutes, then submit by Nov 14.
+
+**Measured, differs from the docs:** a payment takes about 7 s per wallet, not 3 s; a full run takes about 6 minutes.
+
 ## 1. Dates and what to submit
 
 | When | What |
 |---|---|
-| Oct 27 – **Nov 13, 18:29 UTC** | Build phase (HackerEarth). The landing page only says "Nov 13", so confirm the cut-off time with the organizers and aim for **Nov 12**. |
+| Oct 27 – **Nov 15, 11:59 PM PST** (Nov 16, 07:59 UTC) | Build phase. Extended from Nov 13 per Dan Kim (Airwallex) in Slack #announcements, Oct 30. Aim to submit **Nov 14**. |
 | Nov 15 | Finalists announced |
 | Nov 19 | Demo day in SF; remote is fine |
 
@@ -109,6 +121,8 @@ quoted → hold_requested → held (REQUIRES_CAPTURE) → funded (deposit landed
   → draining (last payment, answers settled) → capturing → captured | cancelled
   → float_withdraw_queued → float_withdrawn
 ```
+
+**Starting split (revised Nov 3):** A $0.25, B $0.20, C $0.20, leaving $0.85 in reserve with a $0.05 floor, so the rationing is real.
 
 **Who decides what:**
 

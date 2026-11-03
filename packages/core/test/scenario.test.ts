@@ -18,7 +18,7 @@ describe("kit12 scenario", () => {
 
   it("keeps a reserve above the floor after initial deposits", () => {
     const deposited = s.jobs.reduce((a, j) => a + j.initialDeposit, 0n);
-    expect(s.float - deposited).toBe(parseUsdz("0.50"));
+    expect(s.float - deposited).toBe(parseUsdz("0.85"));
     expect(s.float - deposited >= s.reserveFloor).toBe(true);
   });
 

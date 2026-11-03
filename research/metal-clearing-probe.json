@@ -1,0 +1,111 @@
+{
+  "ranAt": "2026-11-03T10:48:39.345Z",
+  "network": "eip155:63825",
+  "settlement": "0xab3cC15A5Ad1812D0BfEA239bbcF076d2437Ec22",
+  "operator": "0xe4A59b6b0534bFD2589364c77dfD225cab37A68f",
+  "jobAccount": "0x039cff4d6eb6d7c69040b38ef2034667bf2ea9a5fab60e898a3e179132fe7f9d9a",
+  "walletDir": "wallets/probe-2026-11-03T10-47-18-047Z/job",
+  "failures": 0,
+  "log": [
+    {
+      "step": "market up",
+      "at": "2026-11-03T10:47:18.126Z",
+      "baseUrl": "http://127.0.0.1:56954",
+      "providers": [
+        "model-basic@0.010000",
+        "model-standard@0.020000",
+        "model-premium@0.050000",
+        "search@0.020000",
+        "lookup@0.030000"
+      ]
+    },
+    {
+      "step": "deposited",
+      "at": "2026-11-03T10:47:37.547Z",
+      "amount": "0.150000",
+      "account": "0x039cff4d6eb6d7c69040b38ef2034667bf2ea9a5fab60e898a3e179132fe7f9d9a",
+      "ms": 19415
+    },
+    {
+      "step": "paid model-basic",
+      "at": "2026-11-03T10:48:05.148Z",
+      "price": "0.010000",
+      "status": 200,
+      "tries": 4,
+      "ms": 27600,
+      "body": "{\"provider\":\"model-basic\",\"kind\":\"model\",\"tier\":\"basic\",\"text\":\"[basic model] Pa"
+    },
+    {
+      "step": "paid model-standard",
+      "at": "2026-11-03T10:48:13.915Z",
+      "price": "0.020000",
+      "status": 200,
+      "tries": 2,
+      "ms": 8767,
+      "body": "{\"provider\":\"model-standard\",\"kind\":\"model\",\"tier\":\"standard\",\"text\":\"[standard "
+    },
+    {
+      "step": "paid search",
+      "at": "2026-11-03T10:48:21.214Z",
+      "price": "0.020000",
+      "status": 200,
+      "tries": 2,
+      "ms": 7299,
+      "body": "{\"provider\":\"search\",\"kind\":\"search\",\"tier\":null,\"text\":\"Search results for job "
+    },
+    {
+      "step": "repriced model-basic to 0.03",
+      "at": "2026-11-03T10:48:21.214Z"
+    },
+    {
+      "step": "paid model-basic",
+      "at": "2026-11-03T10:48:28.788Z",
+      "price": "0.030000",
+      "status": 200,
+      "tries": 2,
+      "ms": 7574,
+      "body": "{\"provider\":\"model-basic\",\"kind\":\"model\",\"tier\":\"basic\",\"text\":\"[basic model] Pa"
+    },
+    {
+      "step": "over-cap offer refused",
+      "at": "2026-11-03T10:48:28.791Z",
+      "message": "Failed to create payment payload: this clearing wallet pays none of the clearing offers here (offer 0.09 *USDZ is above this wallet's maxAmount 0.05 *USDZ); not"
+    },
+    {
+      "step": "paid search",
+      "at": "2026-11-03T10:48:35.164Z",
+      "price": "0.020000",
+      "status": 503,
+      "tries": 2,
+      "ms": 6372,
+      "body": "{\"error\":\"provider failed after payment\"}"
+    },
+    {
+      "step": "reconcile",
+      "at": "2026-11-03T10:48:37.519Z",
+      "walletCount": 5,
+      "walletSpent": "0.100000",
+      "byProvider": {
+        "model-basic": "0.040000",
+        "model-standard": "0.020000",
+        "model-premium": "0.000000",
+        "search": "0.040000",
+        "lookup": "0.000000"
+      },
+      "facilitatorSettled": "0.100000"
+    },
+    {
+      "step": "spendable estimate",
+      "at": "2026-11-03T10:48:38.018Z",
+      "spendable": "30000000000000000"
+    },
+    {
+      "step": "withdraw",
+      "at": "2026-11-03T10:48:39.345Z",
+      "result": {
+        "status": "empty"
+      },
+      "ms": 1327
+    }
+  ]
+}

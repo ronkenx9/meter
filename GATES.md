@@ -1,6 +1,6 @@
 # Gates: METER day-0 scaffold (no keys needed)
 
-OWNS: package.json, pnpm-workspace.yaml, tsconfig.json, vitest.config.ts, .gitignore, .env.example, packages/core/**, packages/policy/**, packages/metal/**, scenario/**, scripts/**, research/metal-supported.json, packages/airwallex/**, research/airwallex-probe.json
+OWNS: package.json, pnpm-workspace.yaml, tsconfig.json, vitest.config.ts, .gitignore, .env.example, packages/core/**, packages/policy/**, packages/metal/**, scenario/**, scripts/**, research/metal-supported.json, packages/airwallex/**, research/airwallex-probe.json, packages/ledger/**, apps/**, research/**
 
 Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, pure money-rule policy, and verified access to Metal's public facilitator and SDK, ready for the Airwallex and Metal probes once keys exist.
 
@@ -41,3 +41,20 @@ Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, p
   CHECK: node --env-file=.env packages/airwallex/scripts/check-probe.ts
   EXPECT: AIRWALLEX_HOLD_EVIDENCE_OK
   EVIDENCE: automatic-evidence=v1; definition-sha256=d3342f81f1a74d039f6dede4da40ba2900b55ba7766ab13756bd2a7494201011; exit=0; EXPECT=matched; output-sha256=6e58ae309a7abc3fe87ef20a068e085e38b6075b1525f98c8b3feac9b6c2de13; output-bytes=115; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries
+
+## Day 2: Metal clearing and the money path (live testnet)
+
+- [x] G8: a real clearing run on Metal testnet is recorded: wallet record 0.10 matches the facilitator's settlements, a live reprice was paid, and an over-cap offer moved nothing
+  CHECK: node -e "const p=require('./research/metal-clearing-probe.json');const has=(s)=>p.log.some(l=>l.step.startsWith(s));const r=p.log.find(l=>l.step==='reconcile');if(p.failures!==0||!has('over-cap offer')||!has('repriced')||r.walletSpent!=='0.100000'||r.facilitatorSettled!==r.walletSpent)process.exit(1);console.log('METAL_CLEARING_EVIDENCE_OK '+p.settlement)"
+  EXPECT: METAL_CLEARING_EVIDENCE_OK 0x
+  EVIDENCE: automatic-evidence=v1; definition-sha256=6ab3cf84e7d4e6ec6ac1feb15f711794f23e987d7a75c033ae5ce8ad529231c0; exit=0; EXPECT=matched; output-sha256=73d13453bbdbbbb6f1ed11c27f325cca028543a18eca23d1eb3b706e88931f00; output-bytes=70; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries
+
+- [x] G9: one job ran the whole money path live (customer hold, clearing payments, capture exactly equal to the sum of payments, reconciled) and its hash-chained log verifies
+  CHECK: node scripts/check-live-evidence.mjs research/live-one-job.jsonl
+  EXPECT: LIVE_RUN_EVIDENCE_OK
+  EVIDENCE: automatic-evidence=v1; definition-sha256=a97e28c3add03a9ce287f062e43eb9b1293282aa1cf778f9b52044852ad06b87; exit=0; EXPECT=matched; output-sha256=637eaeac1db204700dda75e05498d8f2eb6414d297a898a1febe5bcb4f7d66d5; output-bytes=49; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries
+
+- [x] G10: the full Kit 12 scenario ran live: three customer holds, the overrun and slowdown, a customer-approved raise spent past the original hold, each capture exactly equal to that job's payments, deposits never past the hold at any moment, reconciled, log intact
+  CHECK: node scripts/check-live-evidence.mjs research/live-kit12-run.jsonl && node -e "const L=require('fs').readFileSync('research/live-kit12-run.jsonl','utf8').trim().split('\n').map(JSON.parse);const has=(t,j)=>L.some(e=>e.type===t&&(!j||e.job===j));const cap=L.find(e=>e.type==='hold.captured'&&e.job==='B');if(!has('shock.overrun','B')||!has('shock.slowdown')||!has('job.rerouted')||!has('hold.raised','B')||new Set(L.filter(e=>e.type==='hold.placed').map(e=>e.job)).size!==3||Number(cap.data.captured.slice(1))<=0.75)process.exit(1);console.log('KIT12_LIVE_OK B charged '+cap.data.captured)"
+  EXPECT: KIT12_LIVE_OK B charged $0.7
+  EVIDENCE: automatic-evidence=v1; definition-sha256=9740ae629aaa8caf81a577f9d929d766030e8b10f010f0efe2e69fe4ba7e73fa; exit=0; EXPECT=matched; output-sha256=ec8a7a3fb6091e28ca65b504914ec4570171d6b730d2a74c325780ad26a963b1; output-bytes=81; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=a97eeaa5ee85/23 entries

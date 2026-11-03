@@ -15,5 +15,5 @@
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true
   },
-  "include": ["packages/*/src/**/*.ts", "packages/*/test/**/*.ts"]
+  "include": ["packages/*/src/**/*.ts", "packages/*/test/**/*.ts", "packages/*/scripts/**/*.ts", "apps/*/src/**/*.ts", "apps/*/scripts/**/*.ts", "apps/*/test/**/*.ts"]
 }

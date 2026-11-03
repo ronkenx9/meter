@@ -3,14 +3,14 @@
   "source": "https://airwallexdev.com/guide#12-inference-sourcing-agent",
   "currency": "USD",
   "floatUsdz": "1.50",
-  "reserveFloorUsdz": "0.10",
+  "reserveFloorUsdz": "0.05",
   "maxPaymentUsdz": "0.05",
   "jobs": [
     {
       "id": "A",
       "customer": "Customer A",
       "holdUsd": "1.00",
-      "initialDepositUsdz": "0.40",
+      "initialDepositUsdz": "0.25",
       "brief": "Compare three approaches to cutting cold-chain spoilage for regional grocers.",
       "paragraphs": 14,
       "searches": 3,
@@ -20,7 +20,7 @@
       "id": "B",
       "customer": "Customer B",
       "holdUsd": "0.75",
-      "initialDepositUsdz": "0.30",
+      "initialDepositUsdz": "0.20",
       "brief": "Summarize how US states regulate short-term rental tax collection.",
       "paragraphs": 10,
       "searches": 2,
@@ -30,7 +30,7 @@
       "id": "C",
       "customer": "Customer C",
       "holdUsd": "0.75",
-      "initialDepositUsdz": "0.30",
+      "initialDepositUsdz": "0.20",
       "brief": "Outline the market for refurbished medical imaging equipment.",
       "paragraphs": 10,
       "searches": 2,
@@ -38,11 +38,39 @@
     }
   ],
   "providers": [
-    { "id": "model-basic", "kind": "model", "priceUsdz": "0.01", "latencyMs": 400, "tier": "basic" },
-    { "id": "model-standard", "kind": "model", "priceUsdz": "0.02", "latencyMs": 700, "tier": "standard" },
-    { "id": "model-premium", "kind": "model", "priceUsdz": "0.05", "latencyMs": 1200, "tier": "premium" },
-    { "id": "search", "kind": "search", "priceUsdz": "0.02", "latencyMs": 500 },
-    { "id": "lookup", "kind": "lookup", "priceUsdz": "0.03", "latencyMs": 500 }
+    {
+      "id": "model-basic",
+      "kind": "model",
+      "priceUsdz": "0.01",
+      "latencyMs": 400,
+      "tier": "basic"
+    },
+    {
+      "id": "model-standard",
+      "kind": "model",
+      "priceUsdz": "0.02",
+      "latencyMs": 700,
+      "tier": "standard"
+    },
+    {
+      "id": "model-premium",
+      "kind": "model",
+      "priceUsdz": "0.05",
+      "latencyMs": 1200,
+      "tier": "premium"
+    },
+    {
+      "id": "search",
+      "kind": "search",
+      "priceUsdz": "0.02",
+      "latencyMs": 500
+    },
+    {
+      "id": "lookup",
+      "kind": "lookup",
+      "priceUsdz": "0.03",
+      "latencyMs": 500
+    }
   ],
   "shock": {
     "atFractionOfRun": 0.5,
