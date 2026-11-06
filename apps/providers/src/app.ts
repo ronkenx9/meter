@@ -15,8 +15,10 @@ const NETWORK = "eip155:63825" as const;
 
 export interface LiveProvider extends ScenarioProvider {
   clearingKey: string;
-  /** Drop the response after payment, once, to exercise the lost-answer path. */
+  /** Fail after payment, once, to exercise the failed-after-payment path. */
   dropNext: boolean;
+  /** Take the next payment, then cut the connection before the answer, so the buyer never sees its receipt. */
+  loseNext: boolean;
 }
 
 export type Writer = (p: LiveProvider, query: URLSearchParams) => Promise<string> | string;
@@ -50,7 +52,7 @@ export async function createMarket({ scenario, walletRoot, writer = standIn }: M
   const providers = new Map<string, LiveProvider>();
   for (const p of scenario.providers) {
     const wallet = await openClearingWallet(join(walletRoot, p.id));
-    providers.set(p.id, { ...p, clearingKey: wallet.signer.publicKey, dropNext: false });
+    providers.set(p.id, { ...p, clearingKey: wallet.signer.publicKey, dropNext: false, loseNext: false });
   }
 
   const routes = Object.fromEntries(
@@ -79,11 +81,28 @@ export async function createMarket({ scenario, walletRoot, writer = standIn }: M
   app.post("/market/:id", (req, res) => {
     const p = providers.get(req.params.id);
     if (!p) return void res.status(404).json({ error: "no such provider" });
-    const { price, latencyMs, dropNext } = req.body as { price?: string; latencyMs?: number; dropNext?: boolean };
+    const { price, latencyMs, dropNext, loseNext } = req.body as { price?: string; latencyMs?: number; dropNext?: boolean; loseNext?: boolean };
     if (price !== undefined) p.price = parseUsdz(price) as Millionths;
     if (latencyMs !== undefined) p.latencyMs = latencyMs;
     if (dropNext !== undefined) p.dropNext = dropNext;
-    res.json({ id: p.id, price: millionthsToDecimal(p.price), latencyMs: p.latencyMs, dropNext: p.dropNext });
+    if (loseNext !== undefined) p.loseNext = loseNext;
+    res.json({ id: p.id, price: millionthsToDecimal(p.price), latencyMs: p.latencyMs, dropNext: p.dropNext, loseNext: p.loseNext });
+  });
+
+  // Installed before the payment middleware, which keeps this as the real end and calls it only after settling.
+  // So the payment goes through and the connection drops before the answer and its receipt reach the buyer.
+  app.use((req, res, next) => {
+    const p = providers.get(req.path.slice(1));
+    const paid = req.headers["payment-signature"] !== undefined || req.headers["x-payment"] !== undefined;
+    if (p?.loseNext && paid) {
+      // One lost answer per drill, whichever provider is paid first.
+      for (const q of providers.values()) q.loseNext = false;
+      res.end = (() => {
+        res.socket?.destroy();
+        return res;
+      }) as typeof res.end;
+    }
+    next();
   });
 
   app.use(paymentMiddleware(routes, server));

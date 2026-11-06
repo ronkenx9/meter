@@ -302,11 +302,13 @@ describe("a deposit that fails", () => {
 });
 
 describe("a brief outage", () => {
-  it("a payment that can't reach the network is sent again, and the job finishes", async () => {
+  it("a request that reaches no one is sent again, and costs nothing", async () => {
     const r = rig();
-    const engine = r.engine;
+    const orig = (r.engine as unknown as { d: { wallet: (id: string) => Promise<SimWallet> } }).d;
+    const open = orig.wallet;
     let failed = false;
-    const wrap = (w: SimWallet) => {
+    orig.wallet = async (id) => {
+      const w = await open(id);
       const pay = w.pay.bind(w);
       w.pay = async (url: string) => {
         if (!failed) {
@@ -315,17 +317,25 @@ describe("a brief outage", () => {
         }
         return pay(url);
       };
-    };
-    const orig = (engine as unknown as { d: { wallet: (id: string) => Promise<SimWallet> } }).d;
-    const open = orig.wallet;
-    orig.wallet = async (id) => {
-      const w = await open(id);
-      wrap(w);
       return w;
     };
-    const res = await engine.run();
+    const res = await r.engine.run();
     expect(types(r.log)).toContain("step.retry");
-    expect(types(r.log)).not.toContain("job.failed");
+    expect(types(r.log)).not.toContain("step.failed_after_payment");
+    expect(res.reconciled).toBe(true);
+  });
+
+  it("a paid request whose answer is lost is booked as a paid failure, then the step is bought again", async () => {
+    const r = rig({ shockAt: null });
+    await r.market.loseNext("search");
+    const res = await r.engine.run();
+    const lost = r.log.all().filter((e) => e.type === "step.failed_after_payment");
+    expect(lost).toHaveLength(1);
+    expect(lost[0]!.data).toMatchObject({ provider: "search", status: 0, answer: "lost" });
+    expect(types(r.log)).not.toContain("step.retry");
+    const a = job(res, lost[0]!.job!);
+    expect(a.finished).toBe(true);
+    expect(centsToMillionths(a.captured!)).toBe(a.spent);
     expect(res.reconciled).toBe(true);
   });
 

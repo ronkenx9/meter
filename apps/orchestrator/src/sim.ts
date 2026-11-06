@@ -9,6 +9,7 @@ export class SimMarket implements MarketPort {
   private readonly list: Offer[];
   readonly ledger = new Map<string, Millionths>();
   private readonly drop = new Set<string>();
+  readonly lose = new Set<string>();
 
   constructor(s: Scenario) {
     this.list = s.providers.map((p) => ({ id: p.id, kind: p.kind, tier: p.tier ?? null, price: p.price, latencyMs: p.latencyMs }));
@@ -27,6 +28,9 @@ export class SimMarket implements MarketPort {
   }
   async dropNext(id: string) {
     this.drop.add(id);
+  }
+  async loseNext(id: string) {
+    this.lose.add(id);
   }
   clearingKey(id: string) {
     return `key-${id}`;
@@ -96,6 +100,8 @@ export class SimWallet implements WalletPort {
     const payment: WalletPayment = { id: `${this.jobId}-${++this.seq}`, amount: price, recipient: this.market.clearingKey(id) };
     this.record.push(payment);
     const served = this.market.serve(id, price);
+    // Paid, and then the connection dropped before the answer came back.
+    if (this.market.lose.delete(id)) throw new TypeError("fetch failed");
     return { kind: "paid", status: served.status, body: served.body, price, payment, tries: 1, ms: 0 };
   }
 }
@@ -130,6 +136,11 @@ export class SimHolds implements HoldsPort {
     const h = this.holds.get(intentId)!;
     h.cancelled = true;
     return { intentId, authorized: h.authorized, status: "CANCELLED" };
+  }
+  async read(intentId: string) {
+    const h = this.holds.get(intentId)!;
+    const status = h.cancelled ? "CANCELLED" : h.captures > 0 ? "SUCCEEDED" : "REQUIRES_CAPTURE";
+    return { intentId, authorized: h.authorized, captured: h.captured, status };
   }
 }
 

@@ -19,6 +19,8 @@ export interface MarketPort {
   setLatency(providerId: string, latencyMs: number): Promise<void>;
   setPrice(providerId: string, price: Millionths): Promise<void>;
   dropNext(providerId: string): Promise<void>;
+  /** The next paid request goes through, but its answer never arrives. */
+  loseNext(providerId: string): Promise<void>;
   /** The provider's clearing key, which is how a wallet's payments map back to it. */
   clearingKey(providerId: string): string;
   /** Total the settlement layer has recorded for this provider, for reconciliation. */
@@ -66,6 +68,8 @@ export interface HoldsPort {
   increment(intentId: string, newTotal: Cents): Promise<HoldReceipt>;
   capture(intentId: string, amount: Cents): Promise<HoldReceipt & { captured: Cents }>;
   cancel(intentId: string, reason: string): Promise<HoldReceipt>;
+  /** What the card processor says now, for recovery after a crash. */
+  read(intentId: string): Promise<HoldReceipt & { captured: Cents }>;
 }
 
 /** The approval is bound to what the customer saw: this job, this total, this message. */

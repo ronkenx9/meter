@@ -26,6 +26,8 @@ interface Job {
   blockers: Set<Promise<unknown>>;
   /** Reserve already committed to deposits that haven't landed, so a second plan can't grant it twice. */
   inFlight: Millionths;
+  /** Consecutive requests that reached no one. */
+  outages: number;
   output: string[];
   /** Last failed attempt at the head step, so a failed-after-payment request is retried once. */
   headFailures: number;
@@ -155,6 +157,7 @@ export class Engine {
         raisePending: false,
         blockers: new Set(),
         inFlight: millionths(0n),
+        outages: 0,
         output: [],
         headFailures: 0,
       });
@@ -277,7 +280,8 @@ export class Engine {
         }
 
         const url = this.d.market.url(providerId, { job: job.spec.id, step: `${step.kind}-${step.index}`, of: String(job.paragraphsTotal), attempt: String(job.headFailures) });
-        const outcome = await this.retrying("step.retry", job, () => job.wallet.pay(url), isTransient);
+        const outcome = await this.payOrLost(job, url);
+        if (!outcome) continue;
         if (!(await this.handleOutcome(job, step, providerId, outcome))) break;
         this.maybeShock();
       }
@@ -289,6 +293,27 @@ export class Engine {
     } catch (e) {
       // The hold stays open for a person, and the other jobs still close.
       this.emit("close.blocked", job.spec.id, { reason: "airwallex_unreachable", detail: String(e).slice(0, 300) });
+    }
+  }
+
+  /**
+   * A request whose answer never came back may still have been paid. The wallet's record says which: a paid one
+   * is a failed-after-payment like any other, and an unpaid one is sent again. Null means "send it again".
+   */
+  private async payOrLost(job: Job, url: string): Promise<Awaited<ReturnType<WalletPort["pay"]>> | null> {
+    const before = new Set((await job.wallet.payments()).map((p) => p.id));
+    try {
+      const outcome = await job.wallet.pay(url);
+      job.outages = 0;
+      return outcome;
+    } catch (e) {
+      if (!isTransient(e)) throw e;
+      const paid = (await job.wallet.payments()).find((p) => !before.has(p.id));
+      if (paid) return { kind: "paid", status: 0, body: "", price: paid.amount, payment: paid, tries: 1, ms: 0 };
+      if (++job.outages >= OUTAGE_TRIES) throw e;
+      this.emit("step.retry", job.spec.id, { attempt: job.outages, error: String(e).slice(0, 200) });
+      await this.sleep(this.d.depositRetryMs ?? 5000);
+      return null;
     }
   }
 
@@ -347,8 +372,9 @@ export class Engine {
           return true;
         }
         // It still cost its price. Try once more, then give up on this step rather than burn the budget.
+        // Status 0: paid, but the answer never arrived.
         job.headFailures++;
-        this.emit("step.failed_after_payment", id, { provider: providerId, status: outcome.status, attempts: job.headFailures });
+        this.emit("step.failed_after_payment", id, { provider: providerId, status: outcome.status, ...(outcome.status === 0 ? { answer: "lost" } : {}), attempts: job.headFailures });
         if (job.headFailures >= 2) {
           job.steps.shift();
           job.headFailures = 0;

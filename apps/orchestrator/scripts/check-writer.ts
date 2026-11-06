@@ -21,7 +21,7 @@ await Promise.all(
       for (let i = 1; i <= rounds; i++) {
         total++;
         try {
-          const text = await write({ ...tier, clearingKey: "", dropNext: false }, new URLSearchParams({ job: job.id, step: `model-${i}`, of: String(rounds) }));
+          const text = await write({ ...tier, clearingKey: "", dropNext: false, loseNext: false }, new URLSearchParams({ job: job.id, step: `model-${i}`, of: String(rounds) }));
           if (LEAK.test(text)) bad.push(`${tier.id} ${job.id}-${i}: ${text}`);
           if (i < rounds && /^(in closing|in conclusion|in summary|to conclude|finally|overall)\b/i.test(text)) bad.push(`${tier.id} ${job.id}-${i}: closes early: ${text}`);
           if (tier.tier === "standard" && job.id === "B") console.log(`\n[${i}/${rounds}] ${text}`);

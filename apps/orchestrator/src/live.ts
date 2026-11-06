@@ -36,6 +36,9 @@ export class LiveMarket implements MarketPort {
   async dropNext(id: string) {
     this.provider(id).dropNext = true;
   }
+  async loseNext(id: string) {
+    this.provider(id).loseNext = true;
+  }
   clearingKey(id: string) {
     return this.provider(id).clearingKey;
   }
@@ -64,13 +67,16 @@ export interface PendingHold {
 export class LiveHolds implements HoldsPort {
   private readonly awx: AirwallexClient;
   private readonly runId: string;
+  private readonly timeoutMs: number;
   private readonly captureIds = new Map<string, string>();
   private readonly waiting = new Map<string, { pending: PendingHold; resolve: (r: HoldReceipt) => void; reject: (e: Error) => void }>();
   onAwaiting: ((p: PendingHold) => void) | null = null;
 
-  constructor(awx: AirwallexClient, runId: string) {
+  /** A hold page left open goes stale (its client secret expires), so an unanswered hold is cancelled, not kept. */
+  constructor(awx: AirwallexClient, runId: string, timeoutMs = 15 * 60_000) {
     this.awx = awx;
     this.runId = runId;
+    this.timeoutMs = timeoutMs;
   }
 
   async open(job: { id: string; customer: string; amount: Cents }): Promise<HoldReceipt> {
@@ -87,6 +93,7 @@ export class LiveHolds implements HoldsPort {
     return new Promise<HoldReceipt>((resolve, reject) => {
       this.waiting.set(job.id, { pending, resolve, reject });
       this.onAwaiting?.(pending);
+      setTimeout(() => void this.declined(job.id, `the customer did not approve the hold within ${Math.round(this.timeoutMs / 60_000)} minutes`), this.timeoutMs).unref();
     });
   }
 
@@ -112,12 +119,12 @@ export class LiveHolds implements HoldsPort {
     return receipt;
   }
 
-  async declined(jobId: string): Promise<void> {
+  async declined(jobId: string, reason = "the customer did not approve the hold"): Promise<void> {
     const w = this.waiting.get(jobId);
     if (!w) return;
     this.waiting.delete(jobId);
-    await cancelHold(this.awx, w.pending.intentId, { requestId: randomUUID(), reason: "customer did not approve the hold" }).catch(() => undefined);
-    w.reject(new Error("customer did not approve the hold"));
+    await cancelHold(this.awx, w.pending.intentId, { requestId: randomUUID(), reason }).catch(() => undefined);
+    w.reject(new Error(reason));
   }
 
   async increment(intentId: string, newTotal: Cents): Promise<HoldReceipt> {
@@ -130,6 +137,11 @@ export class LiveHolds implements HoldsPort {
     this.captureIds.set(intentId, requestId);
     const pi = await captureHold(this.awx, intentId, { amount, requestId });
     return { ...toReceipt(pi), captured: parseUsd(pi.captured_amount ?? 0) };
+  }
+
+  async read(intentId: string) {
+    const s = holdState(await getIntent(this.awx, intentId));
+    return { intentId: s.intentId, authorized: s.authorized, captured: s.captured, status: s.status };
   }
 
   async cancel(intentId: string, reason: string): Promise<HoldReceipt> {

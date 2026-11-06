@@ -8,14 +8,15 @@ Drafted 2026-10-30, day 4 of the build. Sources are listed at the bottom; local 
 
 ## Status (Nov 3)
 
-**Done and verified live (GATES.md 11/11; 96 tests):** Airwallex holds, raise, capture and cancel; real Metal clearing payments on testnet; the full Kit 12 run decided and written by real Claude (`research/live-kit12-run.jsonl`): A $0.31 (14/14), B raised to $0.91 and charged $0.88 (40/40), C $0.25 (10/10), float balanced at $1.50, reconciled, log intact. All 3 plans came from Claude. The earlier rule-planner run is kept as `research/live-kit12-rules-run.jsonl`.
+**Done and verified live (GATES.md 13/13; 100 tests):** Airwallex holds, raise, capture and cancel; real Metal clearing payments on testnet; the full Kit 12 run decided and written by real Claude (`research/live-kit12-run.jsonl`): A $0.31 (14/14), B raised to $0.91 and charged $0.88 (40/40), C $0.25 (10/10), float balanced at $1.50, reconciled, log intact. All 3 plans came from Claude. The earlier rule-planner run is kept as `research/live-kit12-rules-run.jsonl`.
 
 **Known limits:** that run's report text predates the writer learning each paragraph's position, so B's paragraph 20 opens "In closing"; the fix is verified on real Claude (54/54 clean) and any new run carries it. The raise was approved by a script acting as the test customer. A paid $0.01 for one failed attempt (a 502, cause not logged), which is how Kit 12 says a failed request works. A hold page left waiting about an hour can fail with "Authentication failed", most likely an expired client secret; a waiting hold has no timeout yet.
 
+**Added Nov 6:** live drills recorded and gated: a lost answer is booked as a paid failure and bought again (`research/live-lost-answer-drill.jsonl`), and a run killed mid-job is settled by `pnpm recover` with a capture equal to the wallet (`research/live-crash-recovery-drill.jsonl`). Unapproved holds cancel after 15 minutes. README with setup, proof table and limits; CI workflow (typecheck, tests, offline evidence checks), rehearsed in a clean clone but not yet run on GitHub.
+
 **Left, in order:**
-1. Drills: lost answer and crash-and-restart; test the dashboard's reprice and fail-after-payment buttons live.
-2. README with setup and proof table, CI.
-3. Demo video under 5 minutes (record a fresh run with the writer fix), then submit by Nov 14.
+1. Push to a GitHub repo (owner decides public or private; CI runs there for the first time).
+2. Demo video under 5 minutes: record a fresh live run (it carries the writer fix), then submit by Nov 14.
 
 **Measured, differs from the docs:** a payment takes about 7 s per wallet, not 3 s; a full run with real Claude takes about 11 minutes. Keep the Mac awake: sleep mid-run froze one for 10 minutes.
 

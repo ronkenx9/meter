@@ -239,6 +239,13 @@ app.post("/api/drills/:name", async (req, res) => {
       await run.market.dropNext(route);
       run.log.append("drill.fail_after_payment", null, { provider: route });
       break;
+    case "lose-answer": {
+      // The next paid answer from any provider, since the planner may have upgraded the step.
+      const all = (await run.market.offers()).map((o) => o.id);
+      for (const id of all) await run.market.loseNext(id);
+      run.log.append("drill.lose_answer", null, { providers: all });
+      break;
+    }
     case "reprice-over-cap":
       await run.market.setPrice(route, parseUsdz("0.09"));
       run.log.append("drill.reprice_over_cap", null, { provider: route, price: "0.09" });
