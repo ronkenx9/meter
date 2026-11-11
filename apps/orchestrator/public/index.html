@@ -5,29 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>METER</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --ground:#101216; --panel:#171a1f; --panel-2:#1e2228; --line:#2a2f37; --line-strong:#3b424c;
-    --text:#f5f1e9; --muted:#9aa1ab; --faint:#6b727c; --coral:#ff694a; --coral-dim:rgba(255,105,74,.16);
-    --ok:#8fd9a8; --warn:#f0c674;
-    --display:"Archivo",system-ui,sans-serif; --body:"Geist",system-ui,sans-serif; --mono:"Geist Mono",ui-monospace,monospace;
+    /* Same system as the landing page: grey page, white cards, one clay accent. */
+    --ground:#F5F5F5; --panel:#fff; --panel-2:#F5F5F5; --line:rgba(0,0,0,.08); --line-strong:rgba(0,0,0,.16);
+    --text:#000; --muted:rgba(0,0,0,.56); --faint:rgba(0,0,0,.4); --coral:#B8401C; --coral-dim:#FBE4DC;
+    --ok:#1F7A4E; --warn:#9A5A00;
+    --display:"Inter Tight",system-ui,sans-serif; --body:"Inter Tight",system-ui,sans-serif; --mono:"Inter Tight",system-ui,sans-serif;
   }
   * { box-sizing:border-box; }
-  html, body { margin:0; background:var(--ground); color:var(--text); font:14px/1.45 var(--body); -webkit-font-smoothing:antialiased; }
+  html, body { margin:0; background:var(--ground); color:var(--text); font:500 14px/1.45 var(--body); -webkit-font-smoothing:antialiased; }
   button { font:inherit; color:inherit; cursor:pointer; }
   button:focus-visible, a:focus-visible { outline:2px solid var(--coral); outline-offset:2px; }
   .num { font-family:var(--mono); font-variant-numeric:tabular-nums; }
   .wrap { max-width:1440px; margin:0 auto; padding:20px 24px 40px; }
 
   header { display:flex; align-items:center; gap:18px; flex-wrap:wrap; padding-bottom:18px; border-bottom:1px solid var(--line); }
-  .mark { font:800 26px/1 var(--display); letter-spacing:-.03em; }
+  .mark { font:600 20px/1 var(--display); letter-spacing:-.03em; display:flex; align-items:center; gap:9px; color:inherit; text-decoration:none; }
   .tag { color:var(--muted); font-size:13px; margin-right:auto; }
   .pill { font:500 12px/1 var(--mono); padding:6px 9px; border-radius:999px; border:1px solid var(--line-strong); color:var(--muted); white-space:nowrap; }
-  .pill.live { color:var(--coral); border-color:var(--coral); }
-  .btn { padding:9px 14px; border-radius:8px; border:1px solid var(--line-strong); background:var(--panel); font-weight:500; min-height:38px; }
-  .btn:hover:not(:disabled) { border-color:var(--text); }
-  .btn.primary { background:var(--text); color:var(--ground); border-color:var(--text); font-weight:600; }
+  .pill { border:0; background:rgba(194,194,194,.28); color:var(--text); font-family:var(--body); }
+  .pill.live { color:#fff; background:#E8552D; }
+  .floor { background:#E8552D !important; }
+  .limit .spent { background:#000 !important; } .limit .deposited { background:rgba(0,0,0,.14) !important; }
+  .track { border-radius:5px !important; }
+  header { border-bottom:0 !important; }
+  .btn { padding:9px 18px; border-radius:999px; border:0; background:rgba(194,194,194,.28); font-weight:500; min-height:40px; }
+  .btn:hover:not(:disabled) { opacity:.8; }
+  .btn.primary { background:#000; color:#F5F5F5; }
+  select.btn { appearance:none; -webkit-appearance:none; padding-right:30px; background:rgba(194,194,194,.28) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 12px center; }
   .btn:disabled { opacity:.4; cursor:default; }
 
   .float { display:grid; grid-template-columns:auto 1fr auto; gap:6px 16px; align-items:center; padding:16px 0; border-bottom:1px solid var(--line); }
@@ -35,21 +42,21 @@
   .track { position:relative; height:10px; background:var(--panel-2); border-radius:3px; overflow:hidden; }
   .track > i { position:absolute; inset:0; transform-origin:left; transform:scaleX(0); transition:transform .35s cubic-bezier(.2,.7,.2,1); }
   .floor { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--coral); }
-  .float .track { overflow:visible; }
+  .float .track { overflow:visible; background:rgba(0,0,0,.08); }
   .legend { grid-column:2; display:flex; gap:16px; flex-wrap:wrap; color:var(--muted); font-size:12px; }
   .legend b { color:var(--text); font-weight:500; }
 
   main { display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:20px; padding-top:20px; align-items:start; }
   .jobs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
-  .job { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; min-width:0; }
-  .job.over { border-color:var(--coral); }
+  .job { background:var(--panel); border:1px solid transparent; border-radius:24px; padding:22px; min-width:0; }
+  .job.over { border-color:#E8552D; }
   .job-top { display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
-  .job h3 { margin:0; font:700 15px/1.2 var(--display); }
+  .job h3 { margin:0; font:500 16px/1.2 var(--display); letter-spacing:-.02em; }
   .state { font:500 11px/1 var(--mono); color:var(--muted); white-space:nowrap; }
   .state.hot { color:var(--coral); }
   .state.done { color:var(--ok); }
   .brief { color:var(--muted); font-size:12.5px; margin:6px 0 14px; min-height:36px; }
-  .meter { font:500 44px/1 var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.03em; }
+  .meter { font:400 48px/1 var(--display); font-variant-numeric:tabular-nums; letter-spacing:-.04em; }
   .meter small { font-size:14px; color:var(--muted); letter-spacing:0; margin-left:6px; }
   .meter.tick { animation:tick .28s ease-out; }
   @keyframes tick { from { opacity:.55; transform:translateY(2px); } to { opacity:1; transform:none; } }
@@ -65,29 +72,32 @@
   .pays .bad { color:var(--coral); }
   .approve-frame { width:100%; height:190px; border:0; display:block; margin-top:12px; }
 
-  .raise { margin-top:12px; padding:12px; border-radius:8px; background:var(--coral-dim); border:1px solid var(--coral); }
+  .raise { margin-top:12px; padding:14px; border-radius:16px; background:var(--coral-dim); }
   .raise p { margin:0 0 10px; font-size:13px; }
   .raise .amounts { font:500 15px/1.2 var(--mono); margin-bottom:8px; }
   .raise .row { display:flex; gap:8px; } .raise .btn { flex:1; }
 
   aside { display:grid; gap:14px; min-width:0; }
-  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; min-width:0; }
-  .panel h2 { margin:0 0 10px; font:700 13px/1 var(--display); }
+  .panel { background:var(--panel); border-radius:24px; padding:20px 22px; min-width:0; }
+  .panel h2 { margin:0 0 12px; font:500 15px/1 var(--display); letter-spacing:-.02em; }
   .sub { color:var(--muted); font-weight:400; font-family:var(--body); font-size:12px; margin-left:6px; }
   table { width:100%; border-collapse:collapse; font-size:12.5px; }
   th { text-align:left; color:var(--muted); font-weight:400; padding:0 0 6px; }
   td { padding:4px 0; border-top:1px solid var(--line); } td.r, th.r { text-align:right; }
   tr.slow td { color:var(--coral); }
   .feed { display:grid; gap:10px; max-height:430px; overflow:auto; }
-  .card { padding:10px 12px; background:var(--panel-2); border-radius:8px; }
+  .card { padding:12px 14px; background:var(--panel-2); border-radius:16px; }
   .card .when { color:var(--faint); font:11px/1 var(--mono); }
   .card .why { margin:5px 0 8px; font-weight:500; }
   .card .who { color:var(--muted); font:11px/1.4 var(--mono); margin:-4px 0 8px; }
   .card .sum { color:var(--muted); font-size:12.5px; margin:0 0 8px; }
   .snippet { margin:10px 0 0; padding-top:10px; border-top:1px solid var(--line); font-size:12.5px; color:var(--muted); display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; min-height:0; }
   .read { margin-top:10px; width:100%; font-size:12.5px; }
-  dialog { background:var(--panel); color:var(--text); border:1px solid var(--line-strong); border-radius:12px; padding:0; width:min(680px,calc(100vw - 32px)); max-height:80vh; }
-  dialog::backdrop { background:rgba(0,0,0,.6); }
+  dialog { background:var(--panel); color:var(--text); border:0; border-radius:24px; padding:0; width:min(680px,calc(100vw - 32px)); max-height:80vh; }
+  dialog::backdrop { background:rgba(0,0,0,.35); }
+  .report-head h2 { font-weight:500; }
+  body.embed header .btn, body.embed header select, body.embed .tag { display:none; }
+  body.embed .wrap { padding-top:14px; }
   .report-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--panel); }
   .report-head h2 { margin:0; font:700 15px/1.2 var(--display); }
   .report-body { padding:6px 18px 18px; font-size:14.5px; line-height:1.6; }
@@ -105,7 +115,7 @@
   .drills { display:flex; gap:8px; flex-wrap:wrap; }
   .drills .btn { flex:1 1 auto; font-size:12.5px; }
   .intro { padding:60px 0; max-width:640px; }
-  .intro h1 { font:800 44px/1 var(--display); letter-spacing:-.03em; margin:0 0 14px; }
+  .intro h1 { font:500 52px/.95 var(--display); letter-spacing:-.04em; margin:0 0 18px; }
   .intro p { color:var(--muted); font-size:16px; margin:0 0 22px; }
   .intro .row { display:flex; gap:10px; flex-wrap:wrap; }
 
@@ -117,16 +127,24 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="mark">METER</div>
+    <a class="mark" href="/"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="5" width="16" height="8" rx="4" fill="none" stroke="#000" stroke-width="2"/><rect x="3.5" y="7.5" width="6" height="3" rx="1.5" fill="#E8552D"/></svg>METER</a>
     <div class="tag">AI jobs on a bar tab: a card hold up front, pay per paragraph, charge exactly what was spent.</div>
     <span class="pill" id="mode" hidden></span>
+    <select class="btn" id="recording" aria-label="Recorded live run to replay">
+      <option value="kit12">Kit 12: customer raises a hold</option>
+      <option value="kit12-no-raise">Kit 12: no raise needed</option>
+      <option value="swapped-payee">Drill: swapped payee</option>
+      <option value="lost-answer">Drill: lost answer</option>
+    </select>
+    <button class="btn" id="run-replay" type="button">Replay</button>
     <button class="btn" id="run-sim" type="button">Run simulation</button>
     <button class="btn primary" id="run-live" type="button">Run live</button>
   </header>
   <div id="intro" class="intro">
     <h1>Three jobs. One short float.</h1>
     <p>Each customer approves a card hold. An agent buys every paragraph, search and lookup at the live price, and has to decide who gets the reserve when one job overruns and the cheapest provider slows. Code holds the money rules; the agent can only propose.</p>
-    <div class="row"><button class="btn primary" id="intro-sim" type="button">Run the simulation (no keys needed)</button></div>
+    <div class="row"><button class="btn primary" id="intro-replay" type="button">Replay the recorded live run</button><button class="btn" id="intro-sim" type="button">Run a simulation</button></div>
+    <p style="font-size:13px;margin-top:14px">Neither needs keys. The replay plays back a real run on the Airwallex sandbox and Metal testnet from its hash-chained log; the simulation runs the same engine and rules on stand-in rails.</p>
   </div>
   <div id="app" hidden>
     <section class="float" aria-label="Float">
@@ -143,6 +161,7 @@
           <button class="btn" data-drill="fail-after-payment" type="button">Fail after payment</button>
           <button class="btn" data-drill="lose-answer" type="button">Lose an answer</button>
           <button class="btn" data-drill="reprice-over-cap" type="button">Reprice over cap</button>
+          <button class="btn" data-drill="swap-payee" type="button">Swap the payee</button>
         </div></section>
         <section class="panel"><h2>Market<span class="sub">prices come from each next 402 offer</span></h2><table><thead><tr><th>Provider</th><th class="r">Price</th><th class="r">Speed</th></tr></thead><tbody id="offers"></tbody></table></section>
         <section class="panel"><h2>Decisions<span class="sub">proposed, then checked by code</span></h2><div class="feed" id="feed"><div class="empty">Nothing to decide yet.</div></div></section>
@@ -168,7 +187,7 @@
 
   const cards = new Map();
   const pays = new Map();
-  const proofs = { jobs: new Map(), providers: new Map(), tx: [] };
+  const proofs = { jobs: new Map(), providers: new Map(), tx: [], waiting: new Map() };
   const reports = new Map();
   let source = null, seen = 0, state = null, timer = null;
 
@@ -237,7 +256,8 @@
       const no = el("button", { class: "btn", type: "button", text: "Decline" });
       yes.onclick = () => answer(job.id, true, raise.newTotal);
       no.onclick = () => answer(job.id, false, raise.newTotal);
-      c.slot.replaceChildren(el("div", { class: "raise" }, el("div", { class: "amounts", text: raise.currentHold + " → " + raise.newTotal }), el("p", { text: raise.message }), el("div", { class: "row" }, yes, no)));
+      const answerRow = s.mode === "replay" ? el("p", { text: "Recorded run: the customer's answer plays back next.", style: "color:var(--muted);margin:0" }) : el("div", { class: "row" }, yes, no);
+      c.slot.replaceChildren(el("div", { class: "raise" }, el("div", { class: "amounts", text: raise.currentHold + " → " + raise.newTotal }), el("p", { text: raise.message }), answerRow));
     } else if (!raise && !holdWaiting && c.slot.dataset.raise) {
       delete c.slot.dataset.raise;
       c.slot.replaceChildren();
@@ -255,10 +275,12 @@
     $("intro").hidden = true;
     $("app").hidden = false;
     $("mode").hidden = false;
-    $("mode").textContent = s.mode === "live" ? "LIVE · Airwallex sandbox + Metal testnet" : "SIMULATION · no network";
+    const recorded = s.recordedAt ? new Date(s.recordedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+    $("mode").textContent = s.mode === "live" ? "LIVE · Airwallex sandbox + Metal testnet" : s.mode === "replay" ? "REPLAY · live run recorded " + recorded + " · sped up" : "SIMULATION · no network";
+    document.querySelectorAll("[data-drill]").forEach((b) => (b.disabled = s.mode === "replay"));
     $("mode").className = "pill" + (s.mode === "live" ? " live" : "");
     const busy = !s.finished && !s.error;
-    $("run-sim").disabled = $("run-live").disabled = busy;
+    $("run-sim").disabled = $("run-live").disabled = busy && s.mode !== "replay";
     const total = num(s.float), reserve = num(s.reserve);
     $("f-total").textContent = usd(total);
     $("f-bar").style.transform = `scaleX(${reserve / total})`;
@@ -306,6 +328,7 @@
     for (const [job, p] of proofs.jobs) rows.push(el("div", { class: "line" }, el("span", { text: `Job ${job}: card ${p.captured}, wallet ${usd(p.walletRecord)}` }), el("span", { class: p.match ? "match" : "miss", text: p.match ? "match" : "MISMATCH" })));
     for (const [id, p] of proofs.providers) if (num(p.walletRecords) > 0) rows.push(el("div", { class: "line" }, el("span", { text: `${id}: wallets ${usd(p.walletRecords)}, settled ${usd(p.settled)}` }), el("span", { class: p.match ? "match" : "miss", text: p.match ? "match" : "MISMATCH" })));
     if (state && state.result) rows.push(el("div", { class: "line" }, el("span", { text: "Hash-chained event log" }), el("span", { class: state.chainBroken === null ? "match" : "miss", text: state.chainBroken === null ? "intact" : "BROKEN" })));
+    for (const [job, at] of proofs.waiting) rows.push(el("div", { class: "line" }, el("span", { text: `Job ${job}: unused float claimable` }), el("span", { class: "num", text: "about " + new Date(at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })));
     for (const t of proofs.tx) {
       const a = el("a", { href: "https://testnet.metalntwx.com/tx/" + t.tx, target: "_blank", rel: "noreferrer", text: t.label, style: "color:inherit" });
       rows.push(el("div", { class: "line" }, el("span", {}, a), el("span", { class: "num", text: t.tx.slice(0, 8) + "…" })));
@@ -324,6 +347,10 @@
         while (c.list.children.length > 5) c.list.lastChild.remove();
       }
     }
+    if (e.type === "payment.refused") {
+      const c = cards.get(e.job);
+      if (c) c.list.prepend(el("li", {}, el("span", { class: "bad", text: e.data.provider + " · offer refused, nothing signed" }), el("span", { text: usd(0) })));
+    }
     if (e.type === "report.text") {
       if (!reports.has(e.job)) reports.set(e.job, []);
       reports.get(e.job).push(e.data);
@@ -336,8 +363,10 @@
     }
     if (e.type === "reconcile.job") proofs.jobs.set(e.job, e.data);
     if (e.type === "reconcile.provider") proofs.providers.set(e.data.provider, e.data);
+    if (e.type === "float.waiting" && e.data.claimableAt) proofs.waiting.set(e.job, e.data.claimableAt);
+    if (e.type === "float.claimed" || e.type === "float.withdrawn") proofs.waiting.delete(e.job);
     if (e.type === "float.claimed") proofs.tx.push({ label: `Job ${e.job} float back: ${usd(e.data.amount)}`, tx: e.data.tx });
-    if (e.type.startsWith("reconcile.") || e.type === "run.finished" || e.type === "float.claimed") renderProof();
+    if (e.type.startsWith("reconcile.") || e.type === "run.finished" || e.type.startsWith("float.")) renderProof();
     schedule();
   }
 
@@ -363,11 +392,11 @@
   }
 
   async function start(mode) {
-    const r = await fetch("/api/run?mode=" + mode, { method: "POST" });
+    const r = await fetch("/api/run?mode=" + mode + (mode === "replay" ? "&recording=" + encodeURIComponent($("recording").value) : ""), { method: "POST" });
     if (!r.ok) return alert((await r.json()).error);
     if (source) source.close();
     source = null; seen = 0;
-    cards.clear(); reports.clear(); proofs.jobs.clear(); proofs.providers.clear(); proofs.tx = [];
+    cards.clear(); reports.clear(); proofs.jobs.clear(); proofs.providers.clear(); proofs.tx = []; proofs.waiting.clear();
     $("jobs").replaceChildren();
     $("feed").replaceChildren(el("div", { class: "empty", text: "Nothing to decide yet." }));
     $("proof").replaceChildren(el("div", { class: "empty", text: "Appears as jobs close." }));
@@ -377,9 +406,17 @@
   $("run-sim").onclick = () => start("sim");
   $("intro-sim").onclick = () => start("sim");
   $("run-live").onclick = () => start("live");
+  $("run-replay").onclick = () => start("replay");
+  $("intro-replay").onclick = () => start("replay");
   document.querySelectorAll("[data-drill]").forEach((b) => (b.onclick = () => fetch("/api/drills/" + b.dataset.drill, { method: "POST" })));
+  // /app?replay=<recording> starts that replay straight away; embed=1 is the landing page's stage.
+  const params = new URLSearchParams(location.search);
+  if (params.get("embed")) document.body.classList.add("embed");
   setInterval(refresh, 1500);
-  refresh();
+  if (params.get("replay")) {
+    $("recording").value = params.get("replay");
+    start("replay");
+  } else refresh();
 </script>
 </body>
 </html>

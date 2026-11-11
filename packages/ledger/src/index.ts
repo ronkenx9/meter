@@ -25,6 +25,16 @@ function encode(data: Record<string, unknown>): string {
   return JSON.stringify(data, (_k, v) => (typeof v === "bigint" ? v.toString() : v));
 }
 
+/** Checks an exported log's chain without a database. Returns the first bad seq, or null if intact. */
+export function verifyEvents(events: readonly LogEvent[]): number | null {
+  let prev = GENESIS;
+  for (const e of events) {
+    if (e.prev !== prev || digest(prev, e.seq, e.at, e.type, e.job, JSON.stringify(e.data)) !== e.hash) return e.seq;
+    prev = e.hash;
+  }
+  return null;
+}
+
 export class EventLog {
   private readonly db: DatabaseSync;
   private readonly listeners = new Set<(e: LogEvent) => void>();

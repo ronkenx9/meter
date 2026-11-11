@@ -364,3 +364,76 @@ describe("a brief outage", () => {
     expect(after.jobs.filter((j) => j.captured !== null).length).toBe(2);
   });
 });
+
+describe("an offer that doesn't match the listing", () => {
+  it("a provider that names someone else as payee is paid nothing, blocked, and its jobs move on", async () => {
+    const r = rig({ shockAt: null });
+    await r.market.swapPayee("model-basic");
+    const res = await r.engine.run();
+    assertInvariants(res, scenario, r.holds, r.wallets);
+    const events = r.log.all();
+    const refused = events.find((e) => e.type === "payment.refused")!;
+    expect(refused.data.provider).toBe("model-basic");
+    expect(refused.data.paid).toBe("0.000000");
+    // Nothing reached the decoy or the blocked provider, before or after.
+    for (const w of r.wallets.values()) {
+      for (const p of await w.payments()) expect(["key-someone-else", "key-model-basic"]).not.toContain(p.recipient);
+    }
+    expect(events.filter((e) => e.type === "payment" && e.data.provider === "model-basic")).toHaveLength(0);
+    expect(events.some((e) => e.type === "job.rerouted" && String(e.data.reason).includes("blocked"))).toBe(true);
+    for (const j of res.jobs) expect(j.finished).toBe(true);
+  });
+
+  it("a step whose only seller is blocked is dropped unpaid, and the job still closes", async () => {
+    const r = rig({ shockAt: null });
+    await r.market.swapPayee("search");
+    const res = await r.engine.run();
+    assertInvariants(res, scenario, r.holds, r.wallets);
+    expect(types(r.log)).toContain("step.skipped");
+    expect(r.log.all().filter((e) => e.type === "payment" && e.data.provider === "search")).toHaveLength(0);
+  });
+
+  it("a price above the one quoted is refused before anything is signed", async () => {
+    const market = new SimMarket(scenario);
+    const w = new SimWallet(market, scenario.maxPayment, "A");
+    await w.deposit(parseUsdz("0.20"));
+    await market.setPrice("model-basic", parseUsdz("0.03"));
+    const out = await w.pay(market.url("model-basic", {}), { price: parseUsdz("0.01"), recipient: market.clearingKey("model-basic") });
+    expect(out.kind).toBe("refused");
+    expect(await w.spent()).toBe(0n);
+  });
+});
+
+describe("a plan that asks the same customer twice", () => {
+  it("asks once, and a second raise in the same plan is skipped, not sent to the card", async () => {
+    const twice: PlannerPort = {
+      async propose(s) {
+        const j = s.jobs[0]!;
+        const up = (c: bigint) => (j.authorized + c) as typeof j.authorized;
+        return [
+          { kind: "ask_hold_raise", jobId: j.id, newTotal: up(20n), message: "first" },
+          { kind: "ask_hold_raise", jobId: j.id, newTotal: up(10n), message: "second" },
+        ];
+      },
+      async judgeStep() {
+        return { providerId: null, reason: "" };
+      },
+    };
+    const r = rig({ planner: twice });
+    const res = await r.engine.run();
+    assertInvariants(res, scenario, r.holds, r.wallets);
+    expect(types(r.log)).toContain("hold.raise_skipped");
+    expect(types(r.log)).not.toContain("job.failed");
+  });
+
+  it("a raise the card refuses leaves the old hold in force and the job closes inside it", async () => {
+    const r = rig();
+    r.holds.increment = async () => {
+      throw new Error("issuer declined the increment");
+    };
+    const res = await r.engine.run();
+    assertInvariants(res, scenario, r.holds, r.wallets);
+    expect(types(r.log)).toContain("hold.raise_failed");
+    expect(job(res, "B").authorized).toBe(parseUsd("0.75"));
+  });
+});

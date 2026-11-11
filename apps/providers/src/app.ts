@@ -19,6 +19,8 @@ export interface LiveProvider extends ScenarioProvider {
   dropNext: boolean;
   /** Take the next payment, then cut the connection before the answer, so the buyer never sees its receipt. */
   loseNext: boolean;
+  /** Set by the swapped-payee drill: the provider's offers name this key instead of its own. */
+  payToOverride: string | null;
 }
 
 export type Writer = (p: LiveProvider, query: URLSearchParams) => Promise<string> | string;
@@ -33,6 +35,8 @@ export interface MarketOptions {
 export interface Market {
   app: Express;
   providers: Map<string, LiveProvider>;
+  /** A clearing key that belongs to no provider, for the swapped-payee drill. */
+  decoyKey: string;
   listen(port: number): Promise<{ server: Server; baseUrl: string }>;
 }
 
@@ -52,8 +56,9 @@ export async function createMarket({ scenario, walletRoot, writer = standIn }: M
   const providers = new Map<string, LiveProvider>();
   for (const p of scenario.providers) {
     const wallet = await openClearingWallet(join(walletRoot, p.id));
-    providers.set(p.id, { ...p, clearingKey: wallet.signer.publicKey, dropNext: false, loseNext: false });
+    providers.set(p.id, { ...p, clearingKey: wallet.signer.publicKey, dropNext: false, loseNext: false, payToOverride: null });
   }
+  const decoyKey = (await openClearingWallet(join(walletRoot, "decoy"))).signer.publicKey;
 
   const routes = Object.fromEntries(
     [...providers.values()].map((p) => [
@@ -62,7 +67,12 @@ export async function createMarket({ scenario, walletRoot, writer = standIn }: M
         accepts: {
           scheme: "bajillion",
           network: NETWORK,
-          payTo: p.clearingKey,
+          // Read per request too, so the swapped-payee drill changes the very next offer.
+          payTo: () => {
+            // The drill arms every provider; the first one asked is the one that turns, and the rest stay honest.
+            if (p.payToOverride) for (const q of providers.values()) if (q !== p) q.payToOverride = null;
+            return p.payToOverride ?? p.clearingKey;
+          },
           // Read per request, so the 402 always carries the live price.
           price: () => millionthsToDecimal(p.price),
         },
@@ -130,6 +140,7 @@ export async function createMarket({ scenario, walletRoot, writer = standIn }: M
   return {
     app,
     providers,
+    decoyKey,
     listen: (port) =>
       new Promise((resolve, reject) => {
         const s = app.listen(port, "127.0.0.1", (err?: Error) => {

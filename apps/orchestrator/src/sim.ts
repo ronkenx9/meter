@@ -3,13 +3,14 @@
 // the hold, increments must go up), so a bug in the engine fails here the way it would live.
 
 import { type Cents, type Millionths, type Scenario, cents, millionths, millionthsToBaseUnits, sumMillionths } from "@meter/core";
-import type { ApprovalsPort, HoldReceipt, HoldRaiseRequest, HoldsPort, MarketPort, Offer, PayResult, WalletPayment, WalletPort, WithdrawResult } from "./ports.ts";
+import type { ApprovalsPort, ExpectedOffer, HoldReceipt, HoldRaiseRequest, HoldsPort, MarketPort, Offer, PayResult, WalletPayment, WalletPort, WithdrawResult } from "./ports.ts";
 
 export class SimMarket implements MarketPort {
   private readonly list: Offer[];
   readonly ledger = new Map<string, Millionths>();
   private readonly drop = new Set<string>();
   readonly lose = new Set<string>();
+  readonly rogue = new Set<string>();
 
   constructor(s: Scenario) {
     this.list = s.providers.map((p) => ({ id: p.id, kind: p.kind, tier: p.tier ?? null, price: p.price, latencyMs: p.latencyMs }));
@@ -32,8 +33,17 @@ export class SimMarket implements MarketPort {
   async loseNext(id: string) {
     this.lose.add(id);
   }
+  async swapPayee(id: string) {
+    this.rogue.add(id);
+  }
   clearingKey(id: string) {
     return `key-${id}`;
+  }
+  /** Who the provider's next offer says to pay. */
+  payTo(id: string) {
+    // As live: when several are armed, the first one asked turns and the rest stay honest.
+    if (this.rogue.has(id) && this.rogue.size > 1) for (const other of [...this.rogue]) if (other !== id) this.rogue.delete(other);
+    return this.rogue.has(id) ? "key-someone-else" : this.clearingKey(id);
   }
   async settled(id: string) {
     return this.ledger.get(id) ?? millionths(0n);
@@ -91,13 +101,16 @@ export class SimWallet implements WalletPort {
         return { status: "empty" };
     }
   }
-  async pay(url: string): Promise<PayResult> {
+  async pay(url: string, expect?: ExpectedOffer): Promise<PayResult> {
     const id = new URL(url).host;
     const price = this.market.priceOf(id);
+    const payTo = this.market.payTo(id);
+    if (expect && payTo !== expect.recipient) return { kind: "refused", reason: `it pays ${payTo}, not the provider's key`, tries: 1, ms: 0 };
+    if (expect && price > expect.price) return { kind: "refused", reason: `it asks ${price} millionths, above the quoted ${expect.price}`, tries: 1, ms: 0 };
     if (price > this.maxPayment) return { kind: "unpaid", status: 402, body: "offer above maxAmount", tries: 1, ms: 0 };
     if ((await this.spent()) + price > this.deposited) return { kind: "needs_deposit", tries: 1, ms: 0, detail: "deposit too low" };
     if (this.delayMs) await new Promise((r) => setTimeout(r, this.delayMs * (0.7 + Math.random() * 0.6)));
-    const payment: WalletPayment = { id: `${this.jobId}-${++this.seq}`, amount: price, recipient: this.market.clearingKey(id) };
+    const payment: WalletPayment = { id: `${this.jobId}-${++this.seq}`, amount: price, recipient: payTo };
     this.record.push(payment);
     const served = this.market.serve(id, price);
     // Paid, and then the connection dropped before the answer came back.

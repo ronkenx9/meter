@@ -5,7 +5,7 @@
 import { type Cents, type Millionths, type Scenario, type ScenarioJob, baseUnitsToMillionths, centsToMillionths, formatUsd, formatUsdz, millionths, sumMillionths } from "@meter/core";
 import type { EventLog } from "@meter/ledger";
 import { type JobMoney, type JobState, type Proposal, assertTransition, canPay, checkPlan, checkTopUp, closeAction, depositLeft, holdIsOpen, newJobMoney } from "@meter/policy";
-import type { ApprovalsPort, HoldsPort, JobView, MarketPort, Offer, PlannerPort, Snapshot, WalletPort } from "./ports.ts";
+import type { ApprovalsPort, ExpectedOffer, HoldsPort, JobView, MarketPort, Offer, PlannerPort, Snapshot, WalletPort } from "./ports.ts";
 
 type Step = { kind: "model" | "search" | "lookup"; index: number };
 
@@ -22,6 +22,8 @@ interface Job {
   /** The customer declined a raise: finish within this hold, and never ask again. */
   holdFinal: boolean;
   raisePending: boolean;
+  /** Times this customer has been asked to raise the hold. */
+  asks: number;
   /** Money moves in flight for this job; it pays nothing until they land. */
   blockers: Set<Promise<unknown>>;
   /** Reserve already committed to deposits that haven't landed, so a second plan can't grant it twice. */
@@ -72,6 +74,8 @@ const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
 
 const DEPOSIT_TRIES = 3;
 const OUTAGE_TRIES = 6;
+/** However the planner reasons, one customer is asked for more money at most this many times in a run. */
+const MAX_ASKS = 3;
 const isTransient = (e: unknown) => /fetch failed|timeout|send the request again/i.test(String(e));
 
 export class Engine {
@@ -82,6 +86,8 @@ export class Engine {
   private decisions: Promise<unknown> = Promise.resolve();
   private deposits: Promise<unknown> = Promise.resolve();
   private shocked = false;
+  /** Providers whose offer named another payee or a higher price than quoted. Nothing is bought from them again. */
+  private readonly blocked = new Set<string>();
   private plannedSteps = 0;
   private doneSteps = 0;
 
@@ -89,6 +95,11 @@ export class Engine {
     this.d = deps;
     this.sleep = deps.sleep ?? defaultSleep;
     this.reserve = deps.scenario.float;
+  }
+
+  /** The market, minus providers this run no longer trusts. */
+  private async offers(): Promise<Offer[]> {
+    return (await this.d.market.offers()).filter((o) => !this.blocked.has(o.id));
   }
 
   private emit(type: string, job: string | null, data: Record<string, unknown> = {}) {
@@ -133,7 +144,7 @@ export class Engine {
 
   async run(): Promise<RunResult> {
     const s = this.d.scenario;
-    const offers = await this.d.market.offers();
+    const offers = await this.offers();
     const startRoute = offers.filter((o) => o.kind === "model").sort((a, b) => Number(a.price - b.price))[0]!.id;
     this.emit("run.started", null, { float: formatUsdz(s.float), reserveFloor: formatUsdz(s.reserveFloor), jobs: s.jobs.map((j) => j.id) });
 
@@ -155,6 +166,7 @@ export class Engine {
         paragraphsTotal: spec.paragraphs,
         holdFinal: false,
         raisePending: false,
+        asks: 0,
         blockers: new Set(),
         inFlight: millionths(0n),
         outages: 0,
@@ -265,7 +277,14 @@ export class Engine {
         if (!job.steps.length) break;
         const step = job.steps[0]!;
         const providerId = await this.providerFor(job, step);
-        const offers = await this.d.market.offers();
+        if (!providerId) {
+          // Its only seller is blocked. The step is dropped, unpaid, and the report says so.
+          job.steps.shift();
+          this.doneSteps++;
+          this.emit("step.skipped", job.spec.id, { step: `${step.kind}-${step.index}`, reason: "no trusted provider sells it" });
+          continue;
+        }
+        const offers = await this.offers();
         const offer = offers.find((o) => o.id === providerId)!;
 
         const check = canPay(job.money, offer.price);
@@ -280,7 +299,7 @@ export class Engine {
         }
 
         const url = this.d.market.url(providerId, { job: job.spec.id, step: `${step.kind}-${step.index}`, of: String(job.paragraphsTotal), attempt: String(job.headFailures) });
-        const outcome = await this.payOrLost(job, url);
+        const outcome = await this.payOrLost(job, url, { price: offer.price, recipient: this.d.market.clearingKey(providerId) });
         if (!outcome) continue;
         if (!(await this.handleOutcome(job, step, providerId, outcome))) break;
         this.maybeShock();
@@ -300,10 +319,10 @@ export class Engine {
    * A request whose answer never came back may still have been paid. The wallet's record says which: a paid one
    * is a failed-after-payment like any other, and an unpaid one is sent again. Null means "send it again".
    */
-  private async payOrLost(job: Job, url: string): Promise<Awaited<ReturnType<WalletPort["pay"]>> | null> {
+  private async payOrLost(job: Job, url: string, expect: ExpectedOffer): Promise<Awaited<ReturnType<WalletPort["pay"]>> | null> {
     const before = new Set((await job.wallet.payments()).map((p) => p.id));
     try {
-      const outcome = await job.wallet.pay(url);
+      const outcome = await job.wallet.pay(url, expect);
       job.outages = 0;
       return outcome;
     } catch (e) {
@@ -331,11 +350,12 @@ export class Engine {
   }
 
   /** The cheap default is the job's route; the planner may pay up for a paragraph that matters. */
-  private async providerFor(job: Job, step: Step): Promise<string> {
-    const offers = await this.d.market.offers();
-    if (step.kind !== "model") return offers.find((o) => o.kind === step.kind)!.id;
+  private async providerFor(job: Job, step: Step): Promise<string | null> {
+    const offers = await this.offers();
+    if (step.kind !== "model") return offers.find((o) => o.kind === step.kind)?.id ?? null;
+    if (!offers.some((o) => o.id === job.route)) return null;
     const verdict = await this.d.planner.judgeStep(this.jobView(job, offers), { index: step.index, total: job.paragraphsTotal }, offers, this.floatSlack(offers));
-    if (verdict.providerId && verdict.providerId !== job.route) {
+    if (verdict.providerId && verdict.providerId !== job.route && offers.some((o) => o.id === verdict.providerId && o.kind === "model")) {
       this.emit("step.upgraded", job.spec.id, { paragraph: step.index, provider: verdict.providerId, reason: verdict.reason });
       return verdict.providerId;
     }
@@ -374,7 +394,7 @@ export class Engine {
         // It still cost its price. Try once more, then give up on this step rather than burn the budget.
         // Status 0: paid, but the answer never arrived.
         job.headFailures++;
-        this.emit("step.failed_after_payment", id, { provider: providerId, status: outcome.status, ...(outcome.status === 0 ? { answer: "lost" } : {}), attempts: job.headFailures });
+        this.emit("step.failed_after_payment", id, { provider: providerId, status: outcome.status, ...(outcome.status === 0 ? { answer: "lost" } : { said: outcome.body.slice(0, 200) }), attempts: job.headFailures });
         if (job.headFailures >= 2) {
           job.steps.shift();
           job.headFailures = 0;
@@ -394,6 +414,12 @@ export class Engine {
         if (job.headFailures >= 12) throw new Error(`deposit never became spendable: ${outcome.detail}`);
         await this.sleep(this.d.depositRetryMs ?? 5000);
         return true;
+      case "refused":
+        // The second lock held: the wallet signed nothing. This provider sells nothing more to this run.
+        this.blocked.add(providerId);
+        this.emit("payment.refused", id, { provider: providerId, step: `${step.kind}-${step.index}`, reason: outcome.reason, paid: "0.000000" });
+        await this.leaveBlocked(providerId);
+        return true;
       case "held":
         // A lost answer left a payment held for another URL. It must go through before anything else.
         this.emit("step.held_payment", id, { url: outcome.url, amount: outcome.amount });
@@ -402,6 +428,18 @@ export class Engine {
         job.money = { ...job.money, spent: await job.wallet.spent() };
         return true;
     }
+  }
+
+  /** Moves every job off a blocked provider to the cheapest one left, then lets the planner rework the money. */
+  private async leaveBlocked(providerId: string) {
+    const next = (await this.offers()).filter((o) => o.kind === "model").sort((a, b) => Number(a.price - b.price))[0];
+    if (!next) return;
+    for (const j of this.jobs.values()) {
+      if (j.route !== providerId || !holdIsOpen(j.state)) continue;
+      j.route = next.id;
+      this.emit("job.rerouted", j.spec.id, { to: next.id, reason: `${providerId} is blocked: its offer did not match its listing` });
+    }
+    void this.replan(`${providerId} is blocked after an offer that did not match its listing`);
   }
 
   /** Runs a replan and reports whether the job can now afford this price. */
@@ -451,7 +489,7 @@ export class Engine {
   }
 
   private async decide(reason: string) {
-    const offers = await this.d.market.offers();
+    const offers = await this.offers();
     const live = [...this.jobs.values()].filter((j) => ["running", "rerouting", "over_budget", "awaiting_hold_raise"].includes(j.state));
     if (!live.length) return;
     const snapshot: Snapshot = { reason, jobs: live.map((j) => this.jobView(j, offers)), offers, reserve: this.reserve, floor: this.d.scenario.reserveFloor };
@@ -496,6 +534,13 @@ export class Engine {
         void this.block(job, this.topUp(job, p.amount, p.reason));
         return;
       case "ask_hold_raise":
+        // One question at a time: a customer already being asked is not asked again by the same plan.
+        if (job.raisePending || job.asks >= MAX_ASKS) {
+          this.emit("hold.raise_skipped", job.spec.id, { to: formatUsd(p.newTotal), reason: job.raisePending ? "this customer is already being asked" : `this customer was already asked ${MAX_ASKS} times` });
+          return;
+        }
+        job.raisePending = true;
+        job.asks++;
         void this.block(job, this.askHoldRaise(job, p.newTotal, p.message));
         return;
       case "pause":
@@ -518,9 +563,16 @@ export class Engine {
     }
     if (approved) {
       this.emit("hold.raise_approved", job.spec.id, { to: formatUsd(newTotal) });
-      const r = await this.d.holds.increment(job.intentId!, newTotal);
-      job.money = { ...job.money, authorized: r.authorized };
-      this.emit("hold.raised", job.spec.id, { intentId: job.intentId, authorized: formatUsd(r.authorized), status: r.status });
+      try {
+        const r = await this.d.holds.increment(job.intentId!, newTotal);
+        job.money = { ...job.money, authorized: r.authorized };
+        this.emit("hold.raised", job.spec.id, { intentId: job.intentId, authorized: formatUsd(r.authorized), status: r.status });
+      } catch (e) {
+        // The card said no. The old hold stands, and the job finishes inside it.
+        approved = false;
+        job.holdFinal = true;
+        this.emit("hold.raise_failed", job.spec.id, { error: String(e).slice(0, 300), hold: formatUsd(job.money.authorized) });
+      }
     } else {
       job.holdFinal = true;
       this.emit("hold.raise_declined", job.spec.id, { hold: formatUsd(job.money.authorized) });
@@ -595,6 +647,7 @@ export class Engine {
   async claimFloat(intervalMs: number, deadline: number): Promise<boolean> {
     const pending = [...this.jobs.values()].filter((j) => j.state === "float_withdraw_queued");
     const claimed = new Map(pending.map((j) => [j.spec.id, 0n]));
+    const announced = new Set<string>();
     const finish = (job: Job) => {
       this.move(job, "float_withdrawn");
       this.emit("float.withdrawn", job.spec.id, { amount: formatUsdz(millionths(claimed.get(job.spec.id)!)) });
@@ -605,6 +658,12 @@ export class Engine {
       for (const job of [...pending]) {
         try {
           const r = await job.wallet.withdraw();
+          if (r.status === "waiting" && r.epoch !== undefined && !announced.has(`${job.spec.id}:${r.epoch}`)) {
+            // Say when, once per epoch, instead of leaving a silent wait.
+            announced.add(`${job.spec.id}:${r.epoch}`);
+            const at = await job.wallet.claimableAt?.(BigInt(r.epoch));
+            this.emit("float.waiting", job.spec.id, { epoch: String(r.epoch), claimableAt: at ? at.toISOString() : null });
+          }
           if (r.status !== "sent") continue;
           if (r.queued) this.emit("float.queued", job.spec.id, { tx: r.queued.tx });
           for (const c of r.claimed) {

@@ -6,17 +6,21 @@ Drafted 2026-10-30, day 4 of the build. Sources are listed at the bottom; local 
 
 ---
 
-## Status (Nov 3)
+## Status (Nov 11)
 
-**Done and verified live (GATES.md 13/13; 100 tests):** Airwallex holds, raise, capture and cancel; real Metal clearing payments on testnet; the full Kit 12 run decided and written by real Claude (`research/live-kit12-run.jsonl`): A $0.31 (14/14), B raised to $0.91 and charged $0.88 (40/40), C $0.25 (10/10), float balanced at $1.50, reconciled, log intact. All 3 plans came from Claude. The earlier rule-planner run is kept as `research/live-kit12-rules-run.jsonl`.
+**Done and verified (GATES.md 17/17; 108 tests; 10,000 random runs clean):**
+- Fresh main run on the current code (`research/live-kit12-run.jsonl`, Nov 11): A $0.30 (14/14), B raised from $0.75 to $0.90 by a click on the dashboard and charged $0.88 (40/40), C $0.25 (10/10). Float balanced, reconciled, every plan from Claude.
+- A second good run where the float could not fund a raise, so none was asked (`research/live-kit12-no-raise-run.jsonl`).
+- Payee and price lock on every payment, proven live (`research/live-swapped-payee-drill.jsonl`); earlier drills (lost answer, crash recovery) still pass.
+- `pnpm check:sim`: 10,000 random runs, half with a planner proposing nonsense. It found two real bugs, now fixed: two raises for one customer in a plan crashed the engine, and a planner could ask the same customer forever (now at most 3 asks).
+- Keyless replay of four recordings in the dashboard; landing page at `/` in the Teampot design system, dashboard at `/app` restyled to match.
+- The wallet now settles a deposit of unknown outcome (looks it up, and if it is still pending takes its nonce). Found in a degraded-testnet run kept as `research/live-degraded-testnet-run.jsonl`.
 
-**Known limits:** that run's report text predates the writer learning each paragraph's position, so B's paragraph 20 opens "In closing"; the fix is verified on real Claude (54/54 clean) and any new run carries it. The raise was approved by a script acting as the test customer. A paid $0.01 for one failed attempt (a 502, cause not logged), which is how Kit 12 says a failed request works. A hold page left waiting about an hour can fail with "Authentication failed", most likely an expired client secret; a waiting hold has no timeout yet.
-
-**Added Nov 6:** live drills recorded and gated: a lost answer is booked as a paid failure and bought again (`research/live-lost-answer-drill.jsonl`), and a run killed mid-job is settled by `pnpm recover` with a capture equal to the wallet (`research/live-crash-recovery-drill.jsonl`). Unapproved holds cancel after 15 minutes. README with setup, proof table and limits; CI workflow (typecheck, tests, offline evidence checks), rehearsed in a clean clone but not yet run on GitHub.
+**Known limits:** see README. Not yet seen live: the unknown-deposit fix meeting that failure again, and the float claimable-time readout.
 
 **Left, in order:**
-1. Push to a GitHub repo (owner decides public or private; CI runs there for the first time).
-2. Demo video under 5 minutes: record a fresh live run (it carries the writer fix), then submit by Nov 14.
+1. Commit, then push to GitHub (owner decides public or private; CI runs there for the first time).
+2. Demo video under 5 minutes (Creative Draft first), then submit by Nov 14.
 
 **Measured, differs from the docs:** a payment takes about 7 s per wallet, not 3 s; a full run with real Claude takes about 11 minutes. Keep the Mac awake: sleep mid-run froze one for 10 minutes.
 

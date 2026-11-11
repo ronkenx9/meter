@@ -1,4 +1,4 @@
-// The two recorded break-it drills did what they claim. Usage: check-drills.mjs lost-answer|crash <log.jsonl>
+// The recorded break-it drills did what they claim. Usage: check-drills.mjs lost-answer|crash|swapped-payee <log.jsonl>
 import { readFileSync } from "node:fs";
 const [kind, file] = process.argv.slice(2);
 const L = readFileSync(file, "utf8").trim().split("\n").map(JSON.parse);
@@ -24,4 +24,19 @@ if (kind === "lost-answer") {
   if (Math.round(Number(c.data.captured.slice(1)) * 1e6) !== paid(c.job)) fail("recovery captured something other than what was paid");
   if (!of("recovery.already_closed").some((e) => e.job === c.job)) fail("a second recovery was not shown to be harmless");
   console.log(`CRASH_RECOVERY_OK ${c.job} captured ${c.data.captured} after the crash, second pass changed nothing`);
-} else fail("usage: check-drills.mjs lost-answer|crash <log.jsonl>");
+} else if (kind === "swapped-payee") {
+  const drill = of("drill.swap_payee")[0];
+  if (!drill) fail("no drill");
+  const refused = of("payment.refused").find((e) => e.seq > drill.seq);
+  if (!refused) fail("no offer was refused");
+  if (!/not the provider's key/.test(refused.data.reason) || refused.data.paid !== "0.000000") fail("the refusal was not for a swapped payee, or something was paid");
+  if (of("payment").some((e) => e.seq > refused.seq && e.data.provider === refused.data.provider)) fail("the blocked provider was paid afterwards");
+  if (!of("report.text").some((e) => e.job === refused.job && e.data.step === refused.data.step && e.data.provider !== refused.data.provider)) fail("the refused step was never bought elsewhere");
+  for (const p of of("reconcile.provider")) if (!p.data.match) fail(`${p.data.provider} does not match its settlements`);
+  const blocked = of("reconcile.provider").find((e) => e.data.provider === refused.data.provider);
+  if (Number(blocked.data.settled) !== 0) fail("the blocked provider has settlements");
+  const cap = of("hold.captured").find((e) => e.job === refused.job);
+  if (Math.round(Number(cap.data.captured.slice(1)) * 1e6) !== paid(refused.job)) fail("capture differs from what was paid");
+  if (of("run.finished")[0]?.data.reconciled !== true) fail("not reconciled");
+  console.log(`SWAPPED_PAYEE_OK ${refused.data.provider} named another payee, nothing was signed, ${refused.data.step} bought elsewhere, charged ${cap.data.captured}`);
+} else fail("usage: check-drills.mjs lost-answer|crash|swapped-payee <log.jsonl>");

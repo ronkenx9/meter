@@ -39,6 +39,9 @@ export class LiveMarket implements MarketPort {
   async loseNext(id: string) {
     this.provider(id).loseNext = true;
   }
+  async swapPayee(id: string) {
+    this.provider(id).payToOverride = this.market.decoyKey;
+  }
   clearingKey(id: string) {
     return this.provider(id).clearingKey;
   }

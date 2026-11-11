@@ -12,9 +12,11 @@
     "recover": "node --env-file=.env apps/orchestrator/scripts/recover.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "check:evidence": "node scripts/check-claude-run.mjs research/live-kit12-run.jsonl && node scripts/check-drills.mjs lost-answer research/live-lost-answer-drill.jsonl && node scripts/check-drills.mjs crash research/live-crash-recovery-drill.jsonl && node scripts/check-scenario.mjs && node scripts/check-secrets.mjs",
+    "check:evidence": "node scripts/check-claude-run.mjs research/live-kit12-run.jsonl && node scripts/check-drills.mjs lost-answer research/live-lost-answer-drill.jsonl && node scripts/check-drills.mjs crash research/live-crash-recovery-drill.jsonl && node scripts/check-claude-run.mjs research/live-kit12-no-raise-run.jsonl --no-raise && node scripts/check-drills.mjs swapped-payee research/live-swapped-payee-drill.jsonl && node apps/orchestrator/scripts/check-replay.ts && node scripts/check-scenario.mjs && node scripts/check-secrets.mjs",
     "check:chain": "node scripts/check-live-evidence.mjs research/live-kit12-run.jsonl",
-    "gates": "node ../.agents/skills/unlazy/scripts/gate-check.mjs GATES.md"
+    "gates": "node ../.agents/skills/unlazy/scripts/gate-check.mjs GATES.md",
+    "check:sim": "node apps/orchestrator/scripts/check-sim.ts 10000",
+    "check:replay": "node apps/orchestrator/scripts/check-replay.ts"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

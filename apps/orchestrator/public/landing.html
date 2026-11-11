@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>METER · AI work on a bar tab</title>
+<meta name="description" content="A card hold up front, a payment per paragraph, and a charge for exactly what the job spent. Built on Airwallex and Metal." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet" />
+<style>
+  /* Layout system follows the Teampot landing page: grey page, white cards, one accent. */
+  :root { --g:#F5F5F5; --t2:rgba(0,0,0,.56); --t3:rgba(0,0,0,.4); --rule:rgba(0,0,0,.16); --fill:rgba(0,0,0,.04); --clay:#E8552D; --clay-deep:#B8401C; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--g); color:#000; font:500 16px/22px "Inter Tight",system-ui,sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  a { color:inherit; text-decoration:none; }
+  h1, h2, h3, p { margin:0; } h1, h2, h3 { font-weight:500; }
+  .num { font-variant-numeric:tabular-nums; }
+  a:focus-visible, button:focus-visible { outline:2px solid #000; outline-offset:3px; }
+
+  .nav-wrap { position:fixed; top:16px; left:0; right:0; z-index:50; display:flex; justify-content:center; padding:0 16px; pointer-events:none; }
+  .nav { pointer-events:auto; display:flex; align-items:center; gap:4px; height:52px; padding:4px 4px 4px 24px; border-radius:26px; background:rgba(225,225,225,.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); width:min(862px,100%); }
+  .brand { display:flex; align-items:center; gap:9px; font-size:17px; letter-spacing:-.03em; margin-right:auto; font-weight:600; }
+  .nav ul { display:flex; list-style:none; margin:0; padding:0; gap:4px; }
+  .nav li a { display:flex; align-items:center; height:44px; padding:4px 16px; font-size:14px; border-radius:22px; }
+  .nav li a:hover { background:rgba(0,0,0,.05); }
+
+  .btn { display:inline-flex; align-items:center; justify-content:center; height:48px; padding:4px 32px; border-radius:999px; font-size:14px; white-space:nowrap; transition:opacity .15s; border:0; cursor:pointer; font-family:inherit; font-weight:500; }
+  .btn.sm { height:44px; padding:4px 24px; }
+  .btn.dark { background:#000; color:#F5F5F5; } .btn.light { background:rgba(194,194,194,.24); color:#000; }
+  .btn:hover { opacity:.85; }
+
+  .hero { padding:200px 24px 0; display:flex; flex-direction:column; align-items:center; text-align:center; }
+  .hero h1 { font-size:56px; line-height:.95; letter-spacing:-.04em; max-width:680px; }
+  .hero p { margin-top:24px; max-width:540px; color:#434343; }
+  .actions { display:flex; gap:8px; margin-top:32px; flex-wrap:wrap; justify-content:center; }
+  .hero small { margin-top:18px; font-size:14px; color:var(--t2); }
+
+  .marquee { margin-top:64px; height:100px; overflow:hidden; display:flex; align-items:center; -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); }
+  .marquee-track { display:flex; width:max-content; animation:marquee 44s linear infinite; }
+  .marquee ul { display:flex; list-style:none; margin:0; padding:0; }
+  .marquee li { padding:0 40px; font-size:18px; letter-spacing:-.02em; color:rgba(0,0,0,.32); white-space:nowrap; }
+  @keyframes marquee { to { transform:translateX(-50%); } }
+
+  .stage { padding:0 60px; max-width:1440px; margin:0 auto; }
+  .stage figure { margin:0; background:#E9E9E9; border-radius:24px; padding:48px 48px 0; overflow:hidden; }
+  .screen { position:relative; width:100%; aspect-ratio:1320/760; border-radius:18px 18px 0 0; overflow:hidden; box-shadow:0 0 0 8px #fff; background:#fff; }
+  .screen iframe { position:absolute; left:0; top:0; width:1320px; height:760px; border:0; transform-origin:0 0; }
+  .stage p { margin-top:16px; text-align:center; font-size:14px; color:var(--t2); }
+
+  .section { max-width:1440px; margin:0 auto; padding:160px 60px 32px; }
+  .eyebrow { font-size:10px; line-height:16px; letter-spacing:.06em; text-transform:uppercase; color:var(--t3); }
+  .section > h2 { margin-top:32px; font-size:36px; line-height:1.1; letter-spacing:-.02em; max-width:640px; }
+  .section > .lede { margin-top:16px; color:var(--t2); max-width:560px; }
+
+  .cards { margin-top:48px; display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .card { background:#fff; border-radius:32px; display:flex; flex-direction:column; min-height:520px; overflow:hidden; }
+  .card-copy { padding:56px 56px 12px; display:grid; gap:12px; }
+  .card h3 { font-size:20px; line-height:24px; letter-spacing:-.02em; }
+  .card p { color:var(--t2); }
+  .card-art { flex:1; display:grid; place-items:center; padding:24px 24px 40px; }
+
+  .mock { width:min(300px,100%); background:var(--g); border-radius:24px; padding:22px; display:grid; gap:12px; font-size:12px; line-height:16px; }
+  .mock-head { display:flex; justify-content:space-between; align-items:center; color:var(--t2); font-size:11px; }
+  .pill { background:#fff; border-radius:999px; padding:3px 9px; font-size:10px; }
+  .pill.green { background:#E6F4EC; color:#1F7A4E; } .pill.amber { background:#FDF1E4; color:#9A5A00; } .pill.clay { background:#FBE4DC; color:var(--clay-deep); }
+  .mock-big { font-weight:400; font-size:34px; line-height:1; letter-spacing:-.04em; }
+  .mock-big small { font-size:12px; color:var(--t2); letter-spacing:0; margin-left:6px; }
+  .bar { height:10px; border-radius:5px; background:#fff; overflow:hidden; }
+  .bar i { display:block; height:100%; background:#000; border-radius:5px; }
+  .lines { list-style:none; margin:0; padding:0; }
+  .lines li { display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid rgba(0,0,0,.06); }
+  .lines li:last-child { border-bottom:0; }
+  .lines span { color:var(--t2); }
+  .mock-btn { background:#000; color:#F5F5F5; border-radius:999px; text-align:center; padding:10px 12px; }
+  .mock-two { display:grid; grid-template-columns:1fr 1fr; gap:8px; } .mock-btn.light { background:#fff; color:#000; }
+
+  .tabs { margin-top:48px; display:grid; grid-template-columns:405px 1fr; gap:40px; align-items:start; }
+  .tab-list { display:flex; flex-direction:column; }
+  .tab-list button { all:unset; cursor:pointer; border-top:1px solid var(--rule); padding:28px 0; display:grid; gap:12px; }
+  .tab-list button:last-child { border-bottom:1px solid var(--rule); }
+  .tab-list h3 { font-size:28px; line-height:1.1; letter-spacing:-.02em; color:var(--t3); transition:color .2s; }
+  .tab-list button[aria-selected="true"] h3, .tab-list button:hover h3 { color:#000; }
+  .tab-list p { color:#707070; max-width:320px; display:none; }
+  .tab-list button[aria-selected="true"] p { display:block; }
+  .tab-list button:focus-visible { outline:2px solid #000; outline-offset:4px; }
+  .panel { background:#EBEBEB; border-radius:32px; min-height:520px; display:grid; place-items:center; padding:48px 24px; }
+  .log { width:min(520px,100%); background:#fff; border-radius:24px; padding:26px; display:grid; gap:14px; animation:in .35s ease-out; }
+  @keyframes in { from { opacity:0; transform:translateY(6px); } }
+  .log h4 { margin:0; font-size:11px; font-weight:500; color:var(--t2); display:flex; justify-content:space-between; }
+  .log ol { list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+  .log li { display:grid; grid-template-columns:104px 1fr; gap:12px; font-size:13px; line-height:18px; padding-top:10px; border-top:1px solid rgba(0,0,0,.06); }
+  .log li b { font-weight:500; font-size:11px; color:var(--t2); }
+  .log li.hot b { color:var(--clay-deep); }
+  .log .src { font-size:11px; color:var(--t3); }
+
+  .stats { margin:48px 0 0; display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .stat { border-top:1px solid var(--rule); padding-top:23px; display:flex; flex-direction:column; gap:16px; }
+  .stat dd { margin:0; font-weight:400; font-size:54px; line-height:1.1; letter-spacing:-.04em; }
+  .stat dt { font-size:14px; line-height:20px; color:var(--t2); max-width:340px; }
+
+  .band { margin-top:160px; background:radial-gradient(120% 120% at 20% 10%,#2B2B2E 0%,#0B0B0C 55%,#000 100%); color:#fff; padding:160px 24px; text-align:center; position:relative; overflow:hidden; }
+  .band::before { content:""; position:absolute; inset:-20%; background:linear-gradient(100deg,transparent 30%,rgba(232,85,45,.18) 48%,transparent 62%); filter:blur(40px); }
+  .band blockquote { position:relative; margin:0 auto; max-width:880px; font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:64px; line-height:1.02; letter-spacing:-.01em; }
+  .band p { position:relative; margin-top:28px; color:rgba(255,255,255,.6); font-size:14px; }
+
+  .who { margin-top:48px; list-style:none; padding:0; display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .who li { border-top:1px solid var(--rule); padding:24px 0; display:grid; gap:8px; align-content:start; }
+  .who h3 { font-size:20px; letter-spacing:-.02em; } .who p { color:var(--t2); max-width:340px; }
+
+  .cta { padding-bottom:192px; }
+  .cta-grid { margin-top:48px; display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .cta-grid article { background:#fff; border-radius:64px; padding:64px; display:flex; flex-direction:column; align-items:flex-start; }
+  .cta-grid h3 { margin-top:40px; font-size:22px; line-height:26px; letter-spacing:-.02em; }
+  .cta-grid article > p:not(.eyebrow) { margin-top:12px; color:var(--t3); max-width:420px; }
+  .cta-grid .btn { margin-top:32px; height:44px; padding:4px 24px; }
+  pre { margin:24px 0 0; background:var(--g); border-radius:16px; padding:16px 18px; font:400 13px/20px ui-monospace,SFMono-Regular,Menlo,monospace; width:100%; overflow:auto; }
+
+  footer { background:#000; color:#fff; padding:80px 80px 64px; display:grid; grid-template-columns:1fr 2fr; gap:40px; }
+  .foot-cols { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .foot-cols div { display:flex; flex-direction:column; gap:12px; }
+  .foot-cols h4 { margin:0 0 8px; font-size:14px; font-weight:500; }
+  .foot-cols a { font-size:14px; color:rgba(255,255,255,.6); } .foot-cols a:hover { color:#fff; }
+  .foot-note { grid-column:2; margin-top:48px; font-size:14px; color:rgba(255,255,255,.6); }
+
+  @media (prefers-reduced-motion:reduce) { .marquee-track, .log { animation:none; } html { scroll-behavior:auto; } }
+  @media (max-width:1100px) { .cards, .who { grid-template-columns:1fr; } .card { min-height:auto; } .tabs { grid-template-columns:1fr; } .stats { grid-template-columns:1fr; } }
+  @media (max-width:720px) {
+    .nav ul { display:none; } .nav { padding-left:18px; }
+    .hero { padding-top:140px; } .hero h1 { font-size:40px; } .hero p { font-size:15px; }
+    .btn { padding:4px 24px; }
+    .marquee { margin-top:40px; height:72px; } .marquee li { font-size:15px; padding:0 24px; }
+    .stage { padding:0 20px; } .stage figure { padding:20px 20px 0; }
+    .section { padding:96px 20px 24px; } .section > h2 { font-size:28px; }
+    .card-copy { padding:36px 28px 8px; }
+    .panel { min-height:auto; padding:20px 12px; border-radius:24px; } .log li { grid-template-columns:1fr; gap:2px; }
+    .stat dd { font-size:40px; }
+    .band { margin-top:96px; padding:96px 20px; } .band blockquote { font-size:38px; }
+    .cta { padding-bottom:96px; } .cta-grid { grid-template-columns:1fr; } .cta-grid article { border-radius:36px; padding:36px 28px; }
+    footer { grid-template-columns:1fr; padding:56px 24px; } .foot-cols { grid-template-columns:1fr 1fr; } .foot-note { grid-column:1; margin-top:16px; }
+  }
+</style>
+</head>
+<body>
+<header class="nav-wrap">
+  <nav class="nav" aria-label="METER">
+    <a class="brand" href="/" aria-label="METER home">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="5" width="16" height="8" rx="4" fill="none" stroke="#000" stroke-width="2"/><rect x="3.5" y="7.5" width="6" height="3" rx="1.5" fill="#E8552D"/></svg>
+      <span>METER</span>
+    </a>
+    <ul>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#wrong">When things go wrong</a></li>
+      <li><a href="#proof">Proof</a></li>
+      <li><a href="#run">Run it</a></li>
+    </ul>
+    <a class="btn dark sm" href="/app">Open app</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>AI work<br />on a bar tab</h1>
+    <p>Your customer approves a card hold. An agent buys every paragraph, search and lookup one small payment at a time. When the job ends, the card is charged exactly what it spent and the rest is released.</p>
+    <div class="actions">
+      <a class="btn dark" href="/app?replay=kit12">Replay a real run</a>
+      <a class="btn light" href="#how">How it works</a>
+    </div>
+    <small>No keys needed. The replay is a recorded run on the Airwallex sandbox and Metal testnet.</small>
+  </section>
+
+  <section class="marquee" aria-label="What METER does">
+    <div class="marquee-track">
+      <ul><li>Card hold up front</li><li>Pay per paragraph</li><li>Charged to the cent</li><li>Asks before spending more</li><li>Two locks on every payment</li><li>Tamper-evident run log</li><li>Recovers from a crash</li></ul>
+      <ul aria-hidden="true"><li>Card hold up front</li><li>Pay per paragraph</li><li>Charged to the cent</li><li>Asks before spending more</li><li>Two locks on every payment</li><li>Tamper-evident run log</li><li>Recovers from a crash</li></ul>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="The product">
+    <figure>
+      <div class="screen" id="screen"><iframe id="live" title="METER replaying a recorded live run" loading="lazy" data-src="/app?replay=kit12&embed=1"></iframe></div>
+    </figure>
+    <p>This is the real app, replaying a run recorded on 11 November 2026. Three customers, one short float.</p>
+  </section>
+
+  <section class="section" id="how">
+    <p class="eyebrow">One tab</p>
+    <h2>A ceiling the customer sets,<br />a bill for what was used</h2>
+    <div class="cards">
+      <article class="card">
+        <div class="card-copy"><h3>1. A hold, not a prepayment</h3><p>The customer approves a hold on their card for the job's budget. Nothing is charged yet, and the job can never cost more than the hold.</p></div>
+        <div class="card-art"><div class="mock">
+          <div class="mock-head"><span>Customer A</span><span class="pill amber">hold placed</span></div>
+          <div class="mock-big num">$1.00<small>held on card</small></div>
+          <ul class="lines"><li><span>Charged so far</span><b class="num">$0.00</b></li><li><span>Charged at the end</span><b>only what's spent</b></li></ul>
+          <div class="mock-btn">Approve hold</div>
+        </div></div>
+      </article>
+      <article class="card">
+        <div class="card-copy"><h3>2. Paid a step at a time</h3><p>Each paragraph, search and lookup is its own payment to the provider that wrote it, at that provider's live price. Three model tiers cost 1, 2 and 5 cents.</p></div>
+        <div class="card-art"><div class="mock">
+          <div class="mock-head"><span>Job A · 14 paragraphs</span><span class="pill">running</span></div>
+          <div class="mock-big num">$0.30<small>of $1.00 hold</small></div>
+          <div class="bar"><i style="width:30%"></i></div>
+          <ul class="lines num"><li><span>model-premium · opening</span><b>$0.05</b></li><li><span>model-basic</span><b>$0.01</b></li><li><span>search</span><b>$0.02</b></li><li><span>lookup</span><b>$0.03</b></li></ul>
+        </div></div>
+      </article>
+      <article class="card">
+        <div class="card-copy"><h3>3. Charged what it spent</h3><p>At the end the card is charged once, for exactly what the job paid out. The rest of the hold is released, and the unused working money comes back.</p></div>
+        <div class="card-art"><div class="mock">
+          <div class="mock-head"><span>Customer A · receipt</span><span class="pill green">matches</span></div>
+          <ul class="lines num"><li><span>Hold</span><b>$1.00</b></li><li><span>Paid to providers</span><b>$0.30</b></li><li><span>Charged to card</span><b>$0.30</b></li><li><span>Released</span><b>$0.70</b></li></ul>
+        </div></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="wrong">
+    <p class="eyebrow">When things go wrong</p>
+    <h2>The agent plans.<br />Code holds the money rules.</h2>
+    <p class="lede">Claude decides who moves provider, who gets the reserve and which customer to ask. It holds no keys, and every proposal is checked in code before anything moves. These are from recorded live runs.</p>
+    <div class="tabs">
+      <div class="tab-list" role="tablist" aria-label="Situations">
+        <button role="tab" aria-selected="true" data-tab="overrun"><h3>A job quadruples</h3><p>The agent asks the customer for a higher hold, in plain words, before spending past the first one.</p></button>
+        <button role="tab" aria-selected="false" data-tab="short"><h3>The money can't stretch</h3><p>If the float couldn't fund a raise, it doesn't ask for one, and says why.</p></button>
+        <button role="tab" aria-selected="false" data-tab="payee"><h3>A provider swaps the payee</h3><p>The wallet signs nothing unless the offer pays that provider's own key at the quoted price.</p></button>
+        <button role="tab" aria-selected="false" data-tab="crash"><h3>The server dies mid-job</h3><p>Recovery settles every hold from the log and the wallets' own records.</p></button>
+      </div>
+      <div class="panel" id="panel"></div>
+    </div>
+  </section>
+
+  <section class="section" id="proof">
+    <p class="eyebrow">Proof</p>
+    <h2>Every number here can be re-checked</h2>
+    <p class="lede">Each run writes a hash-chained log. Scripts in the repo re-check the recordings, and one compares the payments with Metal's own settlement records.</p>
+    <dl class="stats">
+      <div class="stat"><dd class="num">0 of 10,000</dd><dt>random runs broke a money rule. Half were planned by a planner proposing nonsense on purpose.</dt></div>
+      <div class="stat"><dd class="num">$0.00</dd><dt>reached the other key when a live provider's offer named a different payee. The step was bought elsewhere.</dt></div>
+      <div class="stat"><dd>To the cent</dd><dt>The card charge, the wallet's payments and the settlement records agree for every job in the recorded runs.</dt></div>
+    </dl>
+  </section>
+
+  <section class="band">
+    <blockquote>“The agent proposes.<br />Code decides. The customer approves.”</blockquote>
+    <p>How METER works, in one line</p>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">Who it's for</p>
+    <h2>Anyone who sells AI work<br />by the job</h2>
+    <ul class="who">
+      <li><h3>Research and document services</h3><p>You buy from several model and data providers and have to quote a job before you know what it will cost.</p></li>
+      <li><h3>Agent platforms</h3><p>Your customers start long tasks and need a spending ceiling they can trust before they press go.</p></li>
+      <li><h3>Finance teams at AI companies</h3><p>Today you absorb the overruns or surprise the customer with them. A hold and a raise request replace both.</p></li>
+    </ul>
+  </section>
+
+  <section class="section cta" id="run">
+    <p class="eyebrow">Run it</p>
+    <h2>See it without any keys</h2>
+    <div class="cta-grid">
+      <article>
+        <p class="eyebrow">Replay</p>
+        <h3>Watch a real run play back</h3>
+        <p>Four recordings from the Airwallex sandbox and Metal testnet: two full runs and two drills. The log's chain is checked before it plays.</p>
+        <a class="btn dark" href="/app?replay=kit12">Open the replay</a>
+      </article>
+      <article>
+        <p class="eyebrow">Check</p>
+        <h3>Test the money rules yourself</h3>
+        <p>The tests and the 10,000 random runs need no keys and take under a minute.</p>
+        <pre>pnpm install
+pnpm test
+pnpm check:sim
+pnpm check:evidence</pre>
+      </article>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="5" width="16" height="8" rx="4" fill="none" stroke="#fff" stroke-width="2"/><rect x="3.5" y="7.5" width="6" height="3" rx="1.5" fill="#E8552D"/></svg>
+  <div class="foot-cols">
+    <div><h4>Product</h4><a href="/app">Open app</a><a href="/app?replay=kit12">Replay a run</a><a href="#how">How it works</a></div>
+    <div><h4>Proof</h4><a href="#proof">What's verified</a><a href="#wrong">Live drills</a><a href="#run">Run the checks</a></div>
+    <div><h4>Built on</h4><a href="https://www.airwallex.com">Airwallex</a><a href="https://metalntwx.com">Metal</a><a href="https://airwallexdev.com/guide#12-inference-sourcing-agent">Kit 12 brief</a></div>
+  </div>
+  <p class="foot-note">Airwallex sandbox and Metal testnet. Test money only. Built for the Airwallex Agentic Banking Hackathon, Kit 12.</p>
+</footer>
+
+<script>
+  // Each panel quotes a recorded live run; the file it comes from is named under it.
+  const PANELS = {
+    overrun: { title: "Kit 12 run", when: "11 Nov 2026", src: "research/live-kit12-run.jsonl", rows: [
+      ["Shock", "Job B grows from 10 paragraphs to 40, and the cheapest provider slows to 6 seconds."],
+      ["Ask", "“Our basic AI provider has slowed down, and raising your hold from $0.75 to $0.90 lets us finish your remaining 36 paragraphs on a much faster provider, and you are only charged for what is actually used.”", true],
+      ["Customer", "Approves on the dashboard. The hold is raised to $0.90 before any money is spent past $0.75."],
+      ["Plan", "Only then does B move to the faster provider. Moving A and C too would need $0.46, more than the $0.35 available, so they stay."],
+      ["Close", "40 of 40 paragraphs. Charged $0.88, and $0.02 released."],
+    ] },
+    short: { title: "Kit 12 run", when: "11 Nov 2026", src: "research/live-kit12-no-raise-run.jsonl", rows: [
+      ["Shock", "The same overrun and slowdown, with a little less money free."],
+      ["Sums", "Moving B to the faster provider needs $0.91. Only $0.89 is available."],
+      ["Plan", "“A raise for B is therefore not worth asking for, because the float could not fund it.” A and C move to the faster provider; B stays.", true],
+      ["Close", "All three jobs finish in full inside their first holds: $0.47, $0.65 and $0.32."],
+    ] },
+    payee: { title: "Swapped-payee drill", when: "11 Nov 2026", src: "research/live-swapped-payee-drill.jsonl", rows: [
+      ["Drill", "The next provider asked names someone else's key as the payee."],
+      ["Wallet", "Refuses the offer: “it pays 0x0297…5c7b, not the provider's key.” Nothing is signed. Paid: $0.00.", true],
+      ["Engine", "Blocks that provider for the rest of the run and buys the paragraph from the next one."],
+      ["Close", "Charged $0.11, exactly what was paid. Metal's records show nothing settled to the other key."],
+    ] },
+    crash: { title: "Crash-recovery drill", when: "6 Nov 2026", src: "research/live-crash-recovery-drill.jsonl", rows: [
+      ["Crash", "The server is killed in the middle of job A, with a hold open and payments made."],
+      ["Recover", "One command rebuilds the job from the log and reads what the wallet actually paid."],
+      ["Close", "Captures $0.10, exactly what the wallet paid.", true],
+      ["Again", "Running recovery a second time changes nothing."],
+    ] },
+  };
+  const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) k === "class" ? (n.className = v) : k === "text" ? (n.textContent = v) : n.setAttribute(k, v); n.append(...kids); return n; };
+  function show(id) {
+    const p = PANELS[id];
+    document.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
+    document.getElementById("panel").replaceChildren(el("div", { class: "log" },
+      el("h4", {}, el("span", { text: p.title }), el("span", { text: "recorded " + p.when })),
+      el("ol", {}, ...p.rows.map(([k, v, hot]) => el("li", { class: hot ? "hot" : "" }, el("b", { text: k }), el("span", { text: v })))),
+      el("div", { class: "src", text: p.src })));
+  }
+  document.querySelectorAll("[data-tab]").forEach((b) => (b.onclick = () => show(b.dataset.tab)));
+  show("overrun");
+
+  // The stage is the real app at desktop size, scaled to fit. It loads when it scrolls into view.
+  const screen = document.getElementById("screen"), live = document.getElementById("live");
+  const fit = () => (live.style.transform = `scale(${screen.clientWidth / 1320})`);
+  new ResizeObserver(fit).observe(screen);
+  new IntersectionObserver((entries, io) => { if (entries.some((e) => e.isIntersecting)) { live.src = live.dataset.src; io.disconnect(); } }, { rootMargin: "200px" }).observe(screen);
+</script>
+</body>
+</html>

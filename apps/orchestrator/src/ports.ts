@@ -21,6 +21,8 @@ export interface MarketPort {
   dropNext(providerId: string): Promise<void>;
   /** The next paid request goes through, but its answer never arrives. */
   loseNext(providerId: string): Promise<void>;
+  /** The provider's next offer names someone else as the payee, as a hijacked or dishonest provider would. */
+  swapPayee(providerId: string): Promise<void>;
   /** The provider's clearing key, which is how a wallet's payments map back to it. */
   clearingKey(providerId: string): string;
   /** Total the settlement layer has recorded for this provider, for reconciliation. */
@@ -37,14 +39,25 @@ export type PayResult =
   | { kind: "paid"; status: number; body: string; price: Millionths; payment: WalletPayment; tries: number; ms: number }
   | { kind: "unpaid"; status: number; body: string; tries: number; ms: number }
   | { kind: "needs_deposit"; tries: number; ms: number; detail: string }
-  | { kind: "held"; url: string | null; amount: string; tries: number; ms: number; detail: string };
+  | { kind: "held"; url: string | null; amount: string; tries: number; ms: number; detail: string }
+  /** The offer named another payee or a higher price than quoted. Nothing was signed or paid. */
+  | { kind: "refused"; reason: string; tries: number; ms: number };
+
+/** What the engine agreed to before paying: the provider's own key, and at most the quoted price. */
+export interface ExpectedOffer {
+  price: Millionths;
+  recipient: string;
+}
 
 export interface WalletPort {
   deposit(amount: Millionths): Promise<void>;
-  pay(url: string): Promise<PayResult>;
+  /** With `expect`, the wallet signs nothing unless the offer pays that key at no more than that price. */
+  pay(url: string, expect?: ExpectedOffer): Promise<PayResult>;
   payments(): Promise<WalletPayment[]>;
   spent(): Promise<Millionths>;
   withdraw(): Promise<WithdrawResult>;
+  /** When a waiting withdrawal's epoch becomes final, if the rail can say. */
+  claimableAt?(epoch: bigint): Promise<Date | null>;
 }
 
 /** Leaving clearing takes two calls with a wait between: queue the final balance, then claim the payout. */

@@ -15,6 +15,7 @@ import { LiveHolds, LiveMarket, WebApprovals } from "./live.ts";
 import { ClaudePlanner } from "./claude-planner.ts";
 import { RulePlanner } from "./planner.ts";
 import type { HoldsPort, MarketPort } from "./ports.ts";
+import { Replay, loadRecording } from "./replay.ts";
 import { SimHolds, SimMarket, SimWallet } from "./sim.ts";
 
 const root = (p: string) => fileURLToPath(new URL(`../../../${p}`, import.meta.url));
@@ -38,6 +39,17 @@ interface Run {
   error: string | null;
 }
 let current: Run | null = null;
+/** A recorded run being played back. While one is set, it is what the dashboard shows. */
+let replay: Replay | null = null;
+
+/** Recordings a judge can play with no keys: real runs exported from this code's hash-chained log. */
+const RECORDINGS: Record<string, string> = {
+  "kit12": "research/live-kit12-run.jsonl",
+  "kit12-no-raise": "research/live-kit12-no-raise-run.jsonl",
+  "swapped-payee": "research/live-swapped-payee-drill.jsonl",
+  "lost-answer": "research/live-lost-answer-drill.jsonl",
+  "crash-recovery": "research/live-crash-recovery-drill.jsonl",
+};
 
 /** A short single-job scenario: the whole money path in about a minute, for checking the rails. */
 function oneJob(s: Scenario): Scenario {
@@ -125,11 +137,24 @@ function startSim(scenario: Scenario, shock: boolean): Run {
 const app = express();
 app.use(express.json());
 
-app.get("/", (_req, res) => void res.type("html").send(page("index.html")));
+app.get("/", (_req, res) => void res.type("html").send(page("landing.html")));
+app.get("/app", (_req, res) => void res.type("html").send(page("index.html")));
 app.get("/approve", (_req, res) => void res.type("html").send(page("approve.html")));
 
 app.post("/api/run", async (req: Request, res: Response) => {
   if (current && !current.result && !current.error) return void res.status(409).json({ error: "a run is in progress", id: current.id });
+  if (req.query.mode === "replay") {
+    const name = String(req.query.recording ?? "kit12");
+    const file = RECORDINGS[name];
+    if (!file) return void res.status(404).json({ error: "no such recording" });
+    const scenario = loadScenario(root("scenario/kit12.json"));
+    replay?.stop();
+    replay = new Replay(loadRecording(root(file)), scenario, name);
+    replay.start();
+    return void res.status(201).json({ id: replay.id, mode: "replay" });
+  }
+  replay?.stop();
+  replay = null;
   const mode: Mode = req.query.mode === "live" ? "live" : "sim";
   if (mode === "live" && !liveReady()) return void res.status(400).json({ error: "live mode needs AWX_CLIENT_ID, AWX_API_KEY, METAL_RPC_URL and METAL_OPERATOR_KEY in .env" });
   const scenario = loadScenario(root("scenario/kit12.json"));
@@ -145,11 +170,16 @@ app.post("/api/run", async (req: Request, res: Response) => {
 });
 
 const need = (res: Response): Run | null => {
+  if (replay) {
+    res.status(409).json({ error: "a recording is playing; start a run to change anything" });
+    return null;
+  }
   if (!current) res.status(404).json({ error: "no run" });
   return current;
 };
 
 app.get("/api/state", async (_req, res) => {
+  if (replay) return void res.json(replay.state(liveReady()));
   if (!current) return void res.json({ run: null, liveReady: liveReady() });
   const offers = await current.market.offers();
   const v = current.engine.view(offers);
@@ -183,12 +213,12 @@ app.get("/api/state", async (_req, res) => {
 
 /** Everything since `after`, then live. */
 app.get("/api/events", (req, res) => {
-  const run = need(res);
-  if (!run) return;
+  const source = replay ?? need(res)?.log;
+  if (!source) return;
   res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-store", Connection: "keep-alive" });
   const send = (e: unknown) => res.write(`data: ${JSON.stringify(e)}\n\n`);
-  for (const e of run.log.all(Number(req.query.after ?? 0))) send(e);
-  const off = run.log.subscribe(send);
+  for (const e of source.all(Number(req.query.after ?? 0))) send(e);
+  const off = source.subscribe(send);
   req.on("close", off);
 });
 
@@ -244,6 +274,13 @@ app.post("/api/drills/:name", async (req, res) => {
       const all = (await run.market.offers()).map((o) => o.id);
       for (const id of all) await run.market.loseNext(id);
       run.log.append("drill.lose_answer", null, { providers: all });
+      break;
+    }
+    case "swap-payee": {
+      // Whichever provider is asked next, since the planner may have upgraded the step.
+      const all = (await run.market.offers()).map((o) => o.id);
+      for (const id of all) await run.market.swapPayee(id);
+      run.log.append("drill.swap_payee", null, { providers: all });
       break;
     }
     case "reprice-over-cap":

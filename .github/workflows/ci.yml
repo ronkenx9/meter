@@ -15,5 +15,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
+      # 10,000 random runs through the real engine and rules on simulated rails.
+      - run: pnpm check:sim
       # Offline checks of the recorded live runs; the chain comparison needs network and runs locally.
       - run: pnpm check:evidence
