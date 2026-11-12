@@ -19,8 +19,9 @@ Drafted 2026-10-30, day 4 of the build. Sources are listed at the bottom; local 
 **Known limits:** see README. Not yet seen live: the unknown-deposit fix meeting that failure again, and the float claimable-time readout.
 
 **Left, in order:**
-1. Commit, then push to GitHub (owner decides public or private; CI runs there for the first time).
-2. Demo video under 5 minutes (Creative Draft first), then submit by Nov 14.
+1. Demo video under 5 minutes (Creative Draft first), then submit by Nov 14.
+
+Pushed Nov 12 to https://github.com/ronkenx9/meter (public). CI passes on GitHub: install, typecheck, tests, 10,000 random runs, evidence checks. Dependabot opened a vitest 4 bump (PR #1); not merged.
 
 **Measured, differs from the docs:** a payment takes about 7 s per wallet, not 3 s; a full run with real Claude takes about 11 minutes. Keep the Mac awake: sleep mid-run froze one for 10 minutes.
 
