@@ -16,7 +16,8 @@
     "check:chain": "node scripts/check-live-evidence.mjs research/live-kit12-run.jsonl",
     "gates": "node ../.agents/skills/unlazy/scripts/gate-check.mjs GATES.md",
     "check:sim": "node apps/orchestrator/scripts/check-sim.ts 10000",
-    "check:replay": "node apps/orchestrator/scripts/check-replay.ts"
+    "check:replay": "node apps/orchestrator/scripts/check-replay.ts",
+    "check:pages": "node scripts/check-pages.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

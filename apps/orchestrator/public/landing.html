@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet" />
 <style>
-  /* Layout system follows the Teampot landing page: grey page, white cards, one accent. */
-  :root { --g:#F5F5F5; --t2:rgba(0,0,0,.56); --t3:rgba(0,0,0,.4); --rule:rgba(0,0,0,.16); --fill:rgba(0,0,0,.04); --clay:#E8552D; --clay-deep:#B8401C; }
+  /* Layout system follows the Teampot landing page: grey page, white cards, one accent (clay). */
+  :root { --g:#F5F5F5; --t2:rgba(0,0,0,.56); --t3:rgba(0,0,0,.4); --rule:rgba(0,0,0,.16); --fill:rgba(0,0,0,.04); --clay:#E8552D; --clay-deep:#B8401C; --ok:#1F7A4E; }
   * { box-sizing:border-box; }
   html { scroll-behavior:smooth; }
   body { margin:0; background:var(--g); color:#000; font:500 16px/22px "Inter Tight",system-ui,sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
@@ -30,51 +30,131 @@
   .btn.dark { background:#000; color:#F5F5F5; } .btn.light { background:rgba(194,194,194,.24); color:#000; }
   .btn:hover { opacity:.85; }
 
-  .hero { padding:200px 24px 0; display:flex; flex-direction:column; align-items:center; text-align:center; }
+  /* ---------- metal cards ---------- */
+  .mcard { position:relative; text-align:left; width:var(--w,340px); aspect-ratio:1.586; border-radius:calc(var(--w,340px) * .045); transform-style:preserve-3d; font-size:calc(var(--w,340px) * .041); }
+  .mcard::before { content:""; position:absolute; inset:0; border-radius:inherit; transform:translateZ(-3px); background:#7d8086; }
+  .mcard.ink::before { background:#050506; } .mcard.clay::before { background:#7a2a12; }
+  .mcard-body { position:absolute; inset:0; border-radius:inherit; overflow:hidden; padding:7% 7.5%; display:grid; grid-template-rows:auto auto 1fr auto; color:#1a1b1e;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.07) 0 1px, rgba(0,0,0,.035) 1px 2px),
+      linear-gradient(135deg,#eceef1 0%,#c8ccd2 22%,#f6f7f8 46%,#b7bcc4 72%,#dfe2e6 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7), inset 0 -1px 0 rgba(0,0,0,.18), 0 18px 40px -14px rgba(0,0,0,.35); }
+  .mcard.ink .mcard-body { color:#EDEDEF; background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, rgba(0,0,0,.08) 1px 2px),
+      linear-gradient(135deg,#34353a 0%,#141518 34%,#2e2f34 58%,#0e0f11 100%); box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 18px 40px -14px rgba(0,0,0,.5); }
+  .mcard.clay .mcard-body { color:#fff; background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 1px, rgba(0,0,0,.05) 1px 2px),
+      linear-gradient(135deg,#f29170 0%,#c8461d 32%,#ec8a66 55%,#a9391a 82%,#d65a31 100%); box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 18px 40px -14px rgba(122,42,18,.55); }
+  .mcard-sheen { position:absolute; inset:-60% -40%; background:linear-gradient(105deg, transparent 42%, rgba(255,255,255,.5) 50%, transparent 58%); transform:translateX(-30%); pointer-events:none; mix-blend-mode:soft-light; }
+  .mcard.ink .mcard-sheen { background:linear-gradient(105deg, transparent 42%, rgba(255,255,255,.22) 50%, transparent 58%); mix-blend-mode:normal; }
+  .mcard-top { display:flex; justify-content:space-between; align-items:center; font-weight:600; letter-spacing:-.02em; }
+  .mcard-top span:first-child { display:flex; align-items:center; gap:.45em; }
+  .mcard-tag { font-size:.68em; letter-spacing:.08em; text-transform:uppercase; font-weight:500; opacity:.75; }
+  .mcard-chip { margin-top:8%; width:15%; aspect-ratio:1.3; border-radius:.3em; background:linear-gradient(135deg,#e9d39a,#b8954a 45%,#f1dfb0 60%,#a8843c); box-shadow:inset 0 0 0 1px rgba(0,0,0,.18); position:relative; }
+  .mcard-chip::after { content:""; position:absolute; inset:28% 0; border-top:1px solid rgba(0,0,0,.25); border-bottom:1px solid rgba(0,0,0,.25); }
+  .mcard-mid { align-self:end; }
+  .mcard-amount { font-size:2.15em; line-height:1; letter-spacing:-.04em; font-weight:500; text-shadow:0 1px 0 rgba(255,255,255,.35); }
+  .mcard.ink .mcard-amount, .mcard.clay .mcard-amount { text-shadow:0 1px 0 rgba(0,0,0,.3); }
+  .mcard-amount small { font-size:.36em; letter-spacing:0; margin-left:.4em; opacity:.75; }
+  .mcard-meter { margin-top:.55em; height:.38em; border-radius:.2em; background:rgba(0,0,0,.14); overflow:hidden; }
+  .mcard.ink .mcard-meter, .mcard.clay .mcard-meter { background:rgba(255,255,255,.2); }
+  .mcard-meter i { display:block; height:100%; background:currentColor; border-radius:inherit; transform-origin:left; transform:scaleX(0); transition:transform .45s cubic-bezier(.2,.7,.2,1); }
+  .mcard-bottom { margin-top:.7em; display:flex; justify-content:space-between; font-size:.74em; letter-spacing:.1em; text-transform:uppercase; opacity:.85; }
+  .mcard-stamp { position:absolute; right:7%; top:36%; font-size:.7em; letter-spacing:.06em; text-transform:uppercase; padding:.3em .7em; border-radius:999px; background:rgba(0,0,0,.72); color:#fff; opacity:0; transform:scale(.9); transition:opacity .25s ease-out, transform .25s ease-out; }
+  .mcard.clay .mcard-stamp { background:rgba(0,0,0,.55); }
+  .mcard-stamp.on { opacity:1; transform:none; }
+
+  /* ---------- hero ---------- */
+  .hero { padding:184px 24px 0; display:flex; flex-direction:column; align-items:center; text-align:center; }
   .hero h1 { font-size:56px; line-height:.95; letter-spacing:-.04em; max-width:680px; }
   .hero p { margin-top:24px; max-width:540px; color:#434343; }
   .actions { display:flex; gap:8px; margin-top:32px; flex-wrap:wrap; justify-content:center; }
-  .hero small { margin-top:18px; font-size:14px; color:var(--t2); }
+  .fan { position:relative; margin-top:40px; width:min(980px,100%); height:340px; perspective:1600px; }
+  .fan-group { position:absolute; inset:0; transform-style:preserve-3d; transition:transform .5s cubic-bezier(.2,.7,.2,1); }
+  .fan .mcard { position:absolute; left:50%; top:50%; --w:340px; margin:-107px 0 0 -170px; transition:transform .35s cubic-bezier(.2,.7,.2,1); }
+  .fan .mcard[data-i="0"] { transform:translate3d(-300px,22px,-40px) rotateY(22deg) rotateZ(-7deg); }
+  .fan .mcard[data-i="1"] { transform:translate3d(0,-8px,40px); }
+  .fan .mcard[data-i="2"] { transform:translate3d(300px,22px,-40px) rotateY(-22deg) rotateZ(7deg); }
+  .fan .mcard[data-i="0"]:hover { transform:translate3d(-300px,4px,0) rotateY(14deg) rotateZ(-4deg); }
+  .fan .mcard[data-i="1"]:hover { transform:translate3d(0,-26px,80px); }
+  .fan .mcard[data-i="2"]:hover { transform:translate3d(300px,4px,0) rotateY(-14deg) rotateZ(4deg); }
+  .fan-float { position:absolute; inset:0; transform-style:preserve-3d; animation:fanfloat 7s ease-in-out infinite; }
+  .fan-float.paused { animation-play-state:paused; }
+  @keyframes fanfloat { 50% { transform:translateY(-8px); } }
+  .fan-note { margin-top:8px; font-size:14px; color:var(--t2); max-width:560px; }
 
-  .marquee { margin-top:64px; height:100px; overflow:hidden; display:flex; align-items:center; -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); }
-  .marquee-track { display:flex; width:max-content; animation:marquee 44s linear infinite; }
-  .marquee ul { display:flex; list-style:none; margin:0; padding:0; }
-  .marquee li { padding:0 40px; font-size:18px; letter-spacing:-.02em; color:rgba(0,0,0,.32); white-space:nowrap; }
-  @keyframes marquee { to { transform:translateX(-50%); } }
-
-  .stage { padding:0 60px; max-width:1440px; margin:0 auto; }
-  .stage figure { margin:0; background:#E9E9E9; border-radius:24px; padding:48px 48px 0; overflow:hidden; }
-  .screen { position:relative; width:100%; aspect-ratio:1320/760; border-radius:18px 18px 0 0; overflow:hidden; box-shadow:0 0 0 8px #fff; background:#fff; }
-  .screen iframe { position:absolute; left:0; top:0; width:1320px; height:760px; border:0; transform-origin:0 0; }
-  .stage p { margin-top:16px; text-align:center; font-size:14px; color:var(--t2); }
-
+  /* ---------- sections ---------- */
   .section { max-width:1440px; margin:0 auto; padding:160px 60px 32px; }
   .eyebrow { font-size:10px; line-height:16px; letter-spacing:.06em; text-transform:uppercase; color:var(--t3); }
-  .section > h2 { margin-top:32px; font-size:36px; line-height:1.1; letter-spacing:-.02em; max-width:640px; }
-  .section > .lede { margin-top:16px; color:var(--t2); max-width:560px; }
+  .section > h2, .walk-head h2 { margin-top:32px; font-size:36px; line-height:1.1; letter-spacing:-.02em; max-width:640px; }
+  .lede { margin-top:16px; color:var(--t2); max-width:580px; }
 
-  .cards { margin-top:48px; display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
-  .card { background:#fff; border-radius:32px; display:flex; flex-direction:column; min-height:520px; overflow:hidden; }
-  .card-copy { padding:56px 56px 12px; display:grid; gap:12px; }
-  .card h3 { font-size:20px; line-height:24px; letter-spacing:-.02em; }
-  .card p { color:var(--t2); }
-  .card-art { flex:1; display:grid; place-items:center; padding:24px 24px 40px; }
+  /* ---------- walkthrough ---------- */
+  .walk { max-width:1440px; margin:0 auto; padding:160px 60px 0; }
+  .walk-grid { margin-top:24px; display:grid; grid-template-columns:minmax(300px,420px) 1fr; gap:56px; }
+  .walk-steps { list-style:none; margin:0; padding:0; }
+  .wstep { min-height:78vh; display:flex; align-items:center; }
+  .wstep:first-child { min-height:60vh; } .wstep:last-child { min-height:70vh; }
+  .wstep button { all:unset; cursor:pointer; display:grid; gap:14px; opacity:.38; transition:opacity .25s; }
+  .wstep.on button { opacity:1; }
+  .wstep button:focus-visible { outline:2px solid #000; outline-offset:8px; border-radius:8px; }
+  .wnum { font-size:12px; letter-spacing:.06em; color:var(--t3); }
+  .wstep.on .wnum { color:var(--clay-deep); }
+  .wstep h3 { font-size:30px; line-height:1.08; letter-spacing:-.02em; }
+  .wstep p { color:#4a4a4a; max-width:400px; }
+  .wfacts { margin:6px 0 0; display:grid; grid-template-columns:auto 1fr; gap:6px 16px; font-size:14px; max-width:380px; }
+  .wfacts dt { color:var(--t2); } .wfacts dd { margin:0; text-align:right; }
+  .walk-stage-wrap { position:sticky; top:96px; height:calc(100vh - 128px); min-height:560px; display:flex; align-items:center; }
 
-  .mock { width:min(300px,100%); background:var(--g); border-radius:24px; padding:22px; display:grid; gap:12px; font-size:12px; line-height:16px; }
-  .mock-head { display:flex; justify-content:space-between; align-items:center; color:var(--t2); font-size:11px; }
-  .pill { background:#fff; border-radius:999px; padding:3px 9px; font-size:10px; }
-  .pill.green { background:#E6F4EC; color:#1F7A4E; } .pill.amber { background:#FDF1E4; color:#9A5A00; } .pill.clay { background:#FBE4DC; color:var(--clay-deep); }
-  .mock-big { font-weight:400; font-size:34px; line-height:1; letter-spacing:-.04em; }
-  .mock-big small { font-size:12px; color:var(--t2); letter-spacing:0; margin-left:6px; }
-  .bar { height:10px; border-radius:5px; background:#fff; overflow:hidden; }
-  .bar i { display:block; height:100%; background:#000; border-radius:5px; }
-  .lines { list-style:none; margin:0; padding:0; }
-  .lines li { display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid rgba(0,0,0,.06); }
-  .lines li:last-child { border-bottom:0; }
-  .lines span { color:var(--t2); }
-  .mock-btn { background:#000; color:#F5F5F5; border-radius:999px; text-align:center; padding:10px 12px; }
-  .mock-two { display:grid; grid-template-columns:1fr 1fr; gap:8px; } .mock-btn.light { background:#fff; color:#000; }
+  .stage { position:relative; width:100%; max-width:720px; margin-left:auto; background:#EBEBEB; border-radius:32px; padding:24px; display:grid; grid-template-columns:118px 1fr; grid-template-areas:"head head" "vault cards" "vault wallets" "tick provs"; gap:14px 18px; }
+  .st-head { grid-area:head; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--t2); }
+  .st-head b { color:#000; font-weight:500; }
+  .st-replay { all:unset; cursor:pointer; font-size:12px; padding:6px 12px; border-radius:999px; background:#fff; color:#000; }
+  .st-replay:focus-visible { outline:2px solid #000; outline-offset:2px; }
+  .vault { grid-area:vault; background:#141414; color:#F5F5F5; border-radius:20px; padding:16px 14px; display:flex; flex-direction:column; justify-content:space-between; }
+  .vault small { font-size:11px; color:rgba(255,255,255,.6); display:block; }
+  .vault b { display:block; font-weight:400; font-size:26px; letter-spacing:-.04em; margin-top:4px; }
+  .vault .reserve b { font-size:20px; color:#F7B79F; }
+  .vault-bar { height:6px; border-radius:3px; background:rgba(255,255,255,.14); overflow:hidden; margin-top:8px; }
+  .vault-bar i { display:block; height:100%; background:#F5F5F5; transform-origin:left; transition:transform .4s cubic-bezier(.2,.7,.2,1); }
+  .st-cards { grid-area:cards; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; perspective:900px; }
+  .st-cards .mcard { --w:100%; width:100%; font-size:10.5px; transform:rotateX(10deg); transition:transform .35s cubic-bezier(.2,.7,.2,1); }
+  .st-cards .mcard.lift { transform:rotateX(0deg) translateY(-6px); }
+  .st-wallets { grid-area:wallets; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .wallet { background:#fff; border-radius:16px; padding:12px; display:grid; gap:4px; font-size:12px; line-height:16px; }
+  .wallet small { color:var(--t2); font-size:11px; }
+  .wallet .row { display:flex; justify-content:space-between; gap:6px; }
+  .wallet .row span { color:var(--t2); }
+  .wallet .route { color:var(--t3); font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .st-provs { grid-area:provs; display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+  .prov { background:#fff; border-radius:14px; padding:10px 8px; text-align:center; font-size:12px; line-height:15px; transition:transform .18s ease-out; }
+  .prov b { display:block; font-weight:500; }
+  .prov span { color:var(--t2); font-size:11px; }
+  .prov.hit { transform:translateY(-3px); }
+  .prov.slow { background:#FBE4DC; } .prov.slow span { color:var(--clay-deep); }
+  .tick { grid-area:tick; align-self:stretch; display:flex; align-items:center; font-size:11px; color:var(--t3); line-height:14px; }
+  .st-ticker { grid-column:1 / -1; align-self:start; align-content:start; height:76px; overflow:hidden; font-size:13px; line-height:18px; color:#222; background:#fff; border-radius:14px; padding:12px 14px; }
+  .st-ticker .tk-who { color:var(--t3); font-size:11px; display:block; margin-bottom:2px; }
+  .st-ask { position:absolute; left:calc(24px + 118px + 18px); right:24px; top:56px; z-index:3; background:#fff; border-radius:18px; padding:14px 16px; box-shadow:0 20px 50px -18px rgba(0,0,0,.35); font-size:13px; line-height:18px; opacity:0; transform:translateY(8px); pointer-events:none; transition:opacity .25s ease-out, transform .25s ease-out; }
+  .st-ask.on { opacity:1; transform:none; }
+  .st-ask .amounts { font-size:15px; margin-bottom:6px; } .st-ask .amounts b { font-weight:500; }
+  .st-ask .row { display:flex; gap:8px; margin-top:10px; }
+  .st-ask .pill { padding:7px 14px; border-radius:999px; background:var(--fill); font-size:12px; }
+  .st-ask .pill.yes { background:#000; color:#fff; }
+  .st-ask .pill.yes.pressed { background:var(--ok); }
+  .st-coins { position:absolute; inset:0; pointer-events:none; z-index:2; }
+  .coin { position:absolute; left:0; top:0; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:radial-gradient(circle at 35% 30%,#ffd2c2,var(--clay) 60%,#9b3214); box-shadow:0 2px 6px rgba(184,64,28,.45); }
+  .coin.float { background:radial-gradient(circle at 35% 30%,#fff,#bfc3c9 60%,#6b6f75); box-shadow:0 2px 6px rgba(0,0,0,.3); }
+  .st-fallback { grid-column:1 / -1; font-size:13px; color:var(--t2); }
 
+  /* ---------- the real app ---------- */
+  .stage-app { padding:0 60px; max-width:1440px; margin:0 auto; }
+  .stage-app figure { margin:48px 0 0; background:#E9E9E9; border-radius:24px; padding:48px 48px 0; overflow:hidden; }
+  .screen { position:relative; width:100%; aspect-ratio:1320/760; border-radius:18px 18px 0 0; overflow:hidden; box-shadow:0 0 0 8px #fff; background:#fff; }
+  .screen iframe { position:absolute; left:0; top:0; width:1320px; height:760px; border:0; transform-origin:0 0; }
+  .stage-app p.cap { margin-top:16px; text-align:center; font-size:14px; color:var(--t2); }
+
+  /* ---------- tabs, stats, band, who, cta ---------- */
   .tabs { margin-top:48px; display:grid; grid-template-columns:405px 1fr; gap:40px; align-items:start; }
   .tab-list { display:flex; flex-direction:column; }
   .tab-list button { all:unset; cursor:pointer; border-top:1px solid var(--rule); padding:28px 0; display:grid; gap:12px; }
@@ -84,8 +164,8 @@
   .tab-list p { color:#707070; max-width:320px; display:none; }
   .tab-list button[aria-selected="true"] p { display:block; }
   .tab-list button:focus-visible { outline:2px solid #000; outline-offset:4px; }
-  .panel { background:#EBEBEB; border-radius:32px; min-height:520px; display:grid; place-items:center; padding:48px 24px; }
-  .log { width:min(520px,100%); background:#fff; border-radius:24px; padding:26px; display:grid; gap:14px; animation:in .35s ease-out; }
+  .panel { background:#EBEBEB; border-radius:32px; min-height:480px; display:grid; place-items:center; padding:48px 24px; }
+  .log { width:min(520px,100%); background:#fff; border-radius:24px; padding:26px; display:grid; gap:14px; animation:in .3s ease-out; }
   @keyframes in { from { opacity:0; transform:translateY(6px); } }
   .log h4 { margin:0; font-size:11px; font-weight:500; color:var(--t2); display:flex; justify-content:space-between; }
   .log ol { list-style:none; margin:0; padding:0; display:grid; gap:10px; }
@@ -109,12 +189,13 @@
   .who h3 { font-size:20px; letter-spacing:-.02em; } .who p { color:var(--t2); max-width:340px; }
 
   .cta { padding-bottom:192px; }
-  .cta-grid { margin-top:48px; display:grid; grid-template-columns:1fr 1fr; gap:24px; }
-  .cta-grid article { background:#fff; border-radius:64px; padding:64px; display:flex; flex-direction:column; align-items:flex-start; }
-  .cta-grid h3 { margin-top:40px; font-size:22px; line-height:26px; letter-spacing:-.02em; }
-  .cta-grid article > p:not(.eyebrow) { margin-top:12px; color:var(--t3); max-width:420px; }
-  .cta-grid .btn { margin-top:32px; height:44px; padding:4px 24px; }
-  pre { margin:24px 0 0; background:var(--g); border-radius:16px; padding:16px 18px; font:400 13px/20px ui-monospace,SFMono-Regular,Menlo,monospace; width:100%; overflow:auto; }
+  .cta-grid { margin-top:48px; display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .cta-grid article { background:#fff; border-radius:48px; padding:48px; display:flex; flex-direction:column; align-items:flex-start; }
+  .cta-grid h3 { margin-top:32px; font-size:22px; line-height:26px; letter-spacing:-.02em; }
+  .cta-grid article > p:not(.eyebrow) { margin-top:12px; color:var(--t2); }
+  .cta-grid .btn { margin-top:auto; height:44px; padding:4px 24px; }
+  .cta-grid .spacer { flex:1; min-height:24px; }
+  pre { margin:20px 0 0; background:var(--g); border-radius:16px; padding:14px 16px; font:400 13px/20px ui-monospace,SFMono-Regular,Menlo,monospace; width:100%; overflow:auto; }
 
   footer { background:#000; color:#fff; padding:80px 80px 64px; display:grid; grid-template-columns:1fr 2fr; gap:40px; }
   .foot-cols { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
@@ -123,20 +204,43 @@
   .foot-cols a { font-size:14px; color:rgba(255,255,255,.6); } .foot-cols a:hover { color:#fff; }
   .foot-note { grid-column:2; margin-top:48px; font-size:14px; color:rgba(255,255,255,.6); }
 
-  @media (prefers-reduced-motion:reduce) { .marquee-track, .log { animation:none; } html { scroll-behavior:auto; } }
-  @media (max-width:1100px) { .cards, .who { grid-template-columns:1fr; } .card { min-height:auto; } .tabs { grid-template-columns:1fr; } .stats { grid-template-columns:1fr; } }
-  @media (max-width:720px) {
+  @media (prefers-reduced-motion:reduce) {
+    html { scroll-behavior:auto; } .fan-float { animation:none; } .log { animation:none; }
+    .mcard, .fan-group, .mcard-meter i, .vault-bar i, .prov, .st-ask, .mcard-stamp { transition:none; }
+  }
+  @media (max-width:1100px) {
+    .walk-grid { grid-template-columns:minmax(260px,340px) 1fr; gap:32px; }
+    .who, .cta-grid { grid-template-columns:1fr; } .tabs { grid-template-columns:1fr; } .stats { grid-template-columns:1fr; }
+    .fan .mcard { --w:280px; margin:-88px 0 0 -140px; }
+    .fan .mcard[data-i="0"], .fan .mcard[data-i="0"]:hover { transform:translate3d(-230px,22px,-40px) rotateY(22deg) rotateZ(-7deg); }
+    .fan .mcard[data-i="2"], .fan .mcard[data-i="2"]:hover { transform:translate3d(230px,22px,-40px) rotateY(-22deg) rotateZ(7deg); }
+  }
+  @media (max-width:860px) {
     .nav ul { display:none; } .nav { padding-left:18px; }
-    .hero { padding-top:140px; } .hero h1 { font-size:40px; } .hero p { font-size:15px; }
-    .btn { padding:4px 24px; }
-    .marquee { margin-top:40px; height:72px; } .marquee li { font-size:15px; padding:0 24px; }
-    .stage { padding:0 20px; } .stage figure { padding:20px 20px 0; }
-    .section { padding:96px 20px 24px; } .section > h2 { font-size:28px; }
-    .card-copy { padding:36px 28px 8px; }
+    .hero { padding-top:136px; } .hero h1 { font-size:42px; } .hero p { font-size:16px; }
+    .fan { height:300px; margin-top:28px; }
+    .fan .mcard { --w:196px; margin:-62px 0 0 -98px; }
+    .fan .mcard[data-i="0"], .fan .mcard[data-i="0"]:hover { transform:translate3d(-78px,40px,-60px) rotateZ(-9deg); }
+    .fan .mcard[data-i="1"], .fan .mcard[data-i="1"]:hover { transform:translate3d(0,-12px,30px); }
+    .fan .mcard[data-i="2"], .fan .mcard[data-i="2"]:hover { transform:translate3d(78px,40px,-60px) rotateZ(9deg); }
+    .section, .walk { padding:96px 20px 24px; } .section > h2, .walk-head h2 { font-size:28px; }
+    .walk-grid { grid-template-columns:1fr; gap:0; }
+    .walk-stage-wrap { order:-1; top:76px; height:auto; min-height:0; z-index:5; background:var(--g); padding:8px 0; }
+    .stage { grid-template-columns:1fr; grid-template-areas:"head" "vault" "cards" "wallets" "provs"; padding:14px; gap:10px; border-radius:24px; }
+    .tick { display:none; }
+    .vault { flex-direction:row; align-items:center; gap:12px; padding:10px 14px; border-radius:14px; } .vault b { font-size:18px; margin:0; } .vault .reserve b { font-size:16px; } .vault-bar { display:none; }
+    .st-cards .mcard { font-size:7px; }
+    .wallet { padding:8px; font-size:11px; } .wallet .route, .wallet small { display:none; }
+    .st-provs { gap:4px; } .prov { padding:6px 2px; font-size:10px; } .prov span { font-size:9px; }
+    .st-ticker { font-size:12px; padding:8px 10px; min-height:0; }
+    .st-ask { left:14px; right:14px; top:44px; font-size:12px; }
+    .wstep, .wstep:first-child, .wstep:last-child { min-height:70vh; align-items:flex-end; padding-bottom:24px; }
+    .wstep h3 { font-size:24px; }
+    .stage-app { padding:0 20px; } .stage-app figure { padding:16px 16px 0; }
     .panel { min-height:auto; padding:20px 12px; border-radius:24px; } .log li { grid-template-columns:1fr; gap:2px; }
     .stat dd { font-size:40px; }
     .band { margin-top:96px; padding:96px 20px; } .band blockquote { font-size:38px; }
-    .cta { padding-bottom:96px; } .cta-grid { grid-template-columns:1fr; } .cta-grid article { border-radius:36px; padding:36px 28px; }
+    .cta { padding-bottom:96px; } .cta-grid article { border-radius:32px; padding:32px 24px; }
     footer { grid-template-columns:1fr; padding:56px 24px; } .foot-cols { grid-template-columns:1fr 1fr; } .foot-note { grid-column:1; margin-top:16px; }
   }
 </style>
@@ -152,7 +256,7 @@
       <li><a href="#how">How it works</a></li>
       <li><a href="#wrong">When things go wrong</a></li>
       <li><a href="#proof">Proof</a></li>
-      <li><a href="#run">Run it</a></li>
+      <li><a href="/docs">Docs</a></li>
     </ul>
     <a class="btn dark sm" href="/app">Open app</a>
   </nav>
@@ -163,56 +267,109 @@
     <h1>AI work<br />on a bar tab</h1>
     <p>Your customer approves a card hold. An agent buys every paragraph, search and lookup one small payment at a time. When the job ends, the card is charged exactly what it spent and the rest is released.</p>
     <div class="actions">
-      <a class="btn dark" href="/app?replay=kit12">Replay a real run</a>
-      <a class="btn light" href="#how">How it works</a>
+      <a class="btn dark" href="#how">See how a run works</a>
+      <a class="btn light" href="/app?replay=kit12">Replay it in the app</a>
     </div>
-    <small>No keys needed. The replay is a recorded run on the Airwallex sandbox and Metal testnet.</small>
+    <div class="fan" id="fan" aria-label="Three customers' cards from a recorded run">
+      <div class="fan-group" id="fan-group">
+        <div class="fan-float" id="fan-float">
+          <div class="mcard steel" data-i="0">
+            <div class="mcard-body"><div class="mcard-sheen"></div>
+              <div class="mcard-top"><span><svg width="1.1em" height="1.1em" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="5" width="16" height="8" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3.5" y="7.5" width="6" height="3" rx="1.5" fill="#E8552D"/></svg>METER</span><span class="mcard-tag">Customer A</span></div>
+              <div class="mcard-chip"></div>
+              <div class="mcard-mid"><div class="mcard-amount num">$0.30<small>of $1.00 hold</small></div><div class="mcard-meter"><i style="transform:scaleX(.3)"></i></div></div>
+              <div class="mcard-bottom"><span>Charged</span><span>•••• 0008</span></div>
+            </div>
+          </div>
+          <div class="mcard ink" data-i="1">
+            <div class="mcard-body"><div class="mcard-sheen"></div>
+              <div class="mcard-top"><span><svg width="1.1em" height="1.1em" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="5" width="16" height="8" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3.5" y="7.5" width="6" height="3" rx="1.5" fill="#E8552D"/></svg>METER</span><span class="mcard-tag">Customer B</span></div>
+              <div class="mcard-chip"></div>
+              <div class="mcard-mid"><div class="mcard-amount num">$0.88<small>of $0.90 hold</small></div><div class="mcard-meter"><i style="transform:scaleX(.978)"></i></div></div>
+              <div class="mcard-bottom"><span>Raised, then charged</span><span>•••• 0008</span></div>
+            </div>
+          </div>
+          <div class="mcard clay" data-i="2">
+            <div class="mcard-body"><div class="mcard-sheen"></div>
+              <div class="mcard-top"><span><svg width="1.1em" height="1.1em" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="5" width="16" height="8" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3.5" y="7.5" width="6" height="3" rx="1.5" fill="#fff"/></svg>METER</span><span class="mcard-tag">Customer C</span></div>
+              <div class="mcard-chip"></div>
+              <div class="mcard-mid"><div class="mcard-amount num">$0.25<small>of $0.75 hold</small></div><div class="mcard-meter"><i style="transform:scaleX(.333)"></i></div></div>
+              <div class="mcard-bottom"><span>Charged</span><span>•••• 0008</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="fan-note">Three customers from a real run on 11 November 2026, on the Airwallex sandbox and Metal testnet. Each card shows what it was finally charged against its hold. All three used Airwallex's test card.</p>
   </section>
 
-  <section class="marquee" aria-label="What METER does">
-    <div class="marquee-track">
-      <ul><li>Card hold up front</li><li>Pay per paragraph</li><li>Charged to the cent</li><li>Asks before spending more</li><li>Two locks on every payment</li><li>Tamper-evident run log</li><li>Recovers from a crash</li></ul>
-      <ul aria-hidden="true"><li>Card hold up front</li><li>Pay per paragraph</li><li>Charged to the cent</li><li>Asks before spending more</li><li>Two locks on every payment</li><li>Tamper-evident run log</li><li>Recovers from a crash</li></ul>
+  <section class="walk" id="how" aria-labelledby="walk-title">
+    <div class="walk-head">
+      <p class="eyebrow">How a run works</p>
+      <h2 id="walk-title">Five steps, from hold to receipt</h2>
+      <p class="lede">This is the same run, played back from its hash-chained log, step by step. Scroll down, or pick a step. Every number and every sentence in the box comes from the recording.</p>
+    </div>
+    <div class="walk-grid">
+      <ol class="walk-steps" id="steps">
+        <li class="wstep" data-step="1"><button type="button" aria-controls="stage">
+          <span class="wnum">01 · Hold</span>
+          <h3>Each customer approves a hold</h3>
+          <p>Three customers put a hold on a card for the most their report may cost. A hold reserves the money; nothing is charged yet. Claude never sees the card.</p>
+          <dl class="wfacts num"><dt>Holds</dt><dd>$1.00, $0.75, $0.75</dd><dt>Charged so far</dt><dd>$0.00</dd></dl>
+        </button></li>
+        <li class="wstep" data-step="2"><button type="button" aria-controls="stage">
+          <span class="wnum">02 · Fund</span>
+          <h3>METER funds each job's wallet</h3>
+          <p>METER works from its own float of 1.50 test dollars on Metal. It moves a slice into each job's own wallet and keeps the rest in reserve. A wallet can only spend what's in it, and no job is ever funded past its hold.</p>
+          <dl class="wfacts num"><dt>Into the wallets</dt><dd>$0.25, $0.20, $0.20</dd><dt>Kept in reserve</dt><dd>$0.85</dd></dl>
+        </button></li>
+        <li class="wstep" data-step="3"><button type="button" aria-controls="stage">
+          <span class="wnum">03 · Pay per step</span>
+          <h3>Every step is its own payment</h3>
+          <p>Each paragraph, search and lookup is paid to the provider that does it, at that provider's live price. A paragraph costs 1, 2 or 5 cents by model tier, and Claude picks the few worth the dearer one.</p>
+          <dl class="wfacts num"><dt>Payments in this run</dt><dd>76</dd><dt>Per payment on testnet</dt><dd>about 7 s</dd></dl>
+        </button></li>
+        <li class="wstep" data-step="4"><button type="button" aria-controls="stage">
+          <span class="wnum">04 · Shock</span>
+          <h3>A job grows, and the agent asks first</h3>
+          <p>Midway, job B's report grows from 10 paragraphs to 40 and the cheapest provider slows to 6 seconds. Claude works out who can move and who gets the reserve, and asks customer B to raise the hold. Nothing is spent past $0.75 until the yes.</p>
+          <dl class="wfacts num"><dt>Asked</dt><dd>$0.75 → $0.90</dd><dt>Answer</dt><dd>approved</dd></dl>
+        </button></li>
+        <li class="wstep" data-step="5"><button type="button" aria-controls="stage">
+          <span class="wnum">05 · Receipt</span>
+          <h3>Charged exactly what was spent</h3>
+          <p>When a job ends, its card is charged once, for exactly what its wallet paid, and the rest of the hold is released. The unused float comes back, and the books must balance to the cent.</p>
+          <dl class="wfacts num"><dt>Charged</dt><dd>$0.30, $0.88, $0.25</dd><dt>Released</dt><dd>$0.70, $0.02, $0.50</dd></dl>
+        </button></li>
+      </ol>
+      <div class="walk-stage-wrap">
+        <div class="stage" id="stage" aria-label="The recorded run, playing step by step">
+          <div class="st-head"><span>Step <b id="st-step">1</b> of 5 · <span id="st-name">Hold</span></span><button type="button" class="st-replay" id="st-replay">Replay step</button></div>
+          <div class="vault" id="vault">
+            <div><small>METER float</small><b class="num">$1.50</b></div>
+            <div class="reserve"><small>Reserve</small><b class="num" id="st-reserve">$1.50</b><div class="vault-bar"><i id="st-reserve-bar"></i></div></div>
+          </div>
+          <div class="st-cards" id="st-cards"></div>
+          <div class="st-wallets" id="st-wallets"></div>
+          <div class="tick">Providers, each paid per request</div>
+          <div class="st-provs" id="st-provs"></div>
+          <p class="st-ticker num" id="st-ticker" aria-live="polite"><span class="tk-who">Recorded log</span>Loading the recorded run…</p>
+          <div class="st-ask" id="st-ask" aria-hidden="true"></div>
+          <div class="st-coins" id="st-coins"></div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="stage" aria-label="The product">
+  <section class="stage-app" aria-labelledby="app-title">
+    <div class="section" style="padding:120px 0 0">
+      <p class="eyebrow">The operator's view</p>
+      <h2 id="app-title">The real app, replaying the same run</h2>
+    </div>
     <figure>
       <div class="screen" id="screen"><iframe id="live" title="METER replaying a recorded live run" loading="lazy" data-src="/app?replay=kit12&embed=1"></iframe></div>
     </figure>
-    <p>This is the real app, replaying a run recorded on 11 November 2026. Three customers, one short float.</p>
-  </section>
-
-  <section class="section" id="how">
-    <p class="eyebrow">One tab</p>
-    <h2>A ceiling the customer sets,<br />a bill for what was used</h2>
-    <div class="cards">
-      <article class="card">
-        <div class="card-copy"><h3>1. A hold, not a prepayment</h3><p>The customer approves a hold on their card for the job's budget. Nothing is charged yet, and the job can never cost more than the hold.</p></div>
-        <div class="card-art"><div class="mock">
-          <div class="mock-head"><span>Customer A</span><span class="pill amber">hold placed</span></div>
-          <div class="mock-big num">$1.00<small>held on card</small></div>
-          <ul class="lines"><li><span>Charged so far</span><b class="num">$0.00</b></li><li><span>Charged at the end</span><b>only what's spent</b></li></ul>
-          <div class="mock-btn">Approve hold</div>
-        </div></div>
-      </article>
-      <article class="card">
-        <div class="card-copy"><h3>2. Paid a step at a time</h3><p>Each paragraph, search and lookup is its own payment to the provider that wrote it, at that provider's live price. Three model tiers cost 1, 2 and 5 cents.</p></div>
-        <div class="card-art"><div class="mock">
-          <div class="mock-head"><span>Job A · 14 paragraphs</span><span class="pill">running</span></div>
-          <div class="mock-big num">$0.30<small>of $1.00 hold</small></div>
-          <div class="bar"><i style="width:30%"></i></div>
-          <ul class="lines num"><li><span>model-premium · opening</span><b>$0.05</b></li><li><span>model-basic</span><b>$0.01</b></li><li><span>search</span><b>$0.02</b></li><li><span>lookup</span><b>$0.03</b></li></ul>
-        </div></div>
-      </article>
-      <article class="card">
-        <div class="card-copy"><h3>3. Charged what it spent</h3><p>At the end the card is charged once, for exactly what the job paid out. The rest of the hold is released, and the unused working money comes back.</p></div>
-        <div class="card-art"><div class="mock">
-          <div class="mock-head"><span>Customer A · receipt</span><span class="pill green">matches</span></div>
-          <ul class="lines num"><li><span>Hold</span><b>$1.00</b></li><li><span>Paid to providers</span><b>$0.30</b></li><li><span>Charged to card</span><b>$0.30</b></li><li><span>Released</span><b>$0.70</b></li></ul>
-        </div></div>
-      </article>
-    </div>
+    <p class="cap">Every card, decision and proof line here comes from the recording. Open the app to pick another recording or run it yourself.</p>
   </section>
 
   <section class="section" id="wrong">
@@ -226,14 +383,14 @@
         <button role="tab" aria-selected="false" data-tab="payee"><h3>A provider swaps the payee</h3><p>The wallet signs nothing unless the offer pays that provider's own key at the quoted price.</p></button>
         <button role="tab" aria-selected="false" data-tab="crash"><h3>The server dies mid-job</h3><p>Recovery settles every hold from the log and the wallets' own records.</p></button>
       </div>
-      <div class="panel" id="panel"></div>
+      <div class="panel" id="panel" role="tabpanel"></div>
     </div>
   </section>
 
   <section class="section" id="proof">
     <p class="eyebrow">Proof</p>
     <h2>Every number here can be re-checked</h2>
-    <p class="lede">Each run writes a hash-chained log. Scripts in the repo re-check the recordings, and one compares the payments with Metal's own settlement records.</p>
+    <p class="lede">Each run writes a hash-chained log. Scripts in the repo re-check the recordings, including each run's live comparison with Metal's own settlement records.</p>
     <dl class="stats">
       <div class="stat"><dd class="num">0 of 10,000</dd><dt>random runs broke a money rule. Half were planned by a planner proposing nonsense on purpose.</dt></div>
       <div class="stat"><dd class="num">$0.00</dd><dt>reached the other key when a live provider's offer named a different payee. The step was bought elsewhere.</dt></div>
@@ -257,23 +414,30 @@
   </section>
 
   <section class="section cta" id="run">
-    <p class="eyebrow">Run it</p>
-    <h2>See it without any keys</h2>
+    <p class="eyebrow">Try it</p>
+    <h2>Three ways in, no keys needed</h2>
     <div class="cta-grid">
       <article>
-        <p class="eyebrow">Replay</p>
-        <h3>Watch a real run play back</h3>
+        <p class="eyebrow">1 · Watch</p>
+        <h3>Replay a recorded run</h3>
         <p>Four recordings from the Airwallex sandbox and Metal testnet: two full runs and two drills. The log's chain is checked before it plays.</p>
+        <div class="spacer"></div>
         <a class="btn dark" href="/app?replay=kit12">Open the replay</a>
       </article>
       <article>
-        <p class="eyebrow">Check</p>
-        <h3>Test the money rules yourself</h3>
+        <p class="eyebrow">2 · Check</p>
+        <h3>Test the money rules</h3>
         <p>The tests and the 10,000 random runs need no keys and take under a minute.</p>
         <pre>pnpm install
 pnpm test
-pnpm check:sim
-pnpm check:evidence</pre>
+pnpm check:sim</pre>
+      </article>
+      <article>
+        <p class="eyebrow">3 · Read</p>
+        <h3>Learn how it's built</h3>
+        <p>Setup for a live run, the money rules and where they live in the code, the drills, the API and the known limits.</p>
+        <div class="spacer"></div>
+        <a class="btn light" href="/docs">Read the docs</a>
       </article>
     </div>
   </section>
@@ -283,14 +447,276 @@ pnpm check:evidence</pre>
   <svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="5" width="16" height="8" rx="4" fill="none" stroke="#fff" stroke-width="2"/><rect x="3.5" y="7.5" width="6" height="3" rx="1.5" fill="#E8552D"/></svg>
   <div class="foot-cols">
     <div><h4>Product</h4><a href="/app">Open app</a><a href="/app?replay=kit12">Replay a run</a><a href="#how">How it works</a></div>
-    <div><h4>Proof</h4><a href="#proof">What's verified</a><a href="#wrong">Live drills</a><a href="#run">Run the checks</a></div>
+    <div><h4>Learn</h4><a href="/docs">Docs</a><a href="#proof">What's verified</a><a href="https://github.com/ronkenx9/meter">GitHub</a></div>
     <div><h4>Built on</h4><a href="https://www.airwallex.com">Airwallex</a><a href="https://metalntwx.com">Metal</a><a href="https://airwallexdev.com/guide#12-inference-sourcing-agent">Kit 12 brief</a></div>
   </div>
   <p class="foot-note">Airwallex sandbox and Metal testnet. Test money only. Built for the Airwallex Agentic Banking Hackathon, Kit 12.</p>
 </footer>
 
 <script>
-  // Each panel quotes a recorded live run; the file it comes from is named under it.
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) k === "class" ? (n.className = v) : k === "text" ? (n.textContent = v) : n.setAttribute(k, v); n.append(...kids); return n; };
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const usd = (n) => "$" + Number(String(n).replace("$", "")).toFixed(2);
+  const dollars = (s) => Number(String(s).replace("$", ""));
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  /* ---------- hero fan: pointer tilt, paused when off-screen ---------- */
+  (() => {
+    const fan = $("fan"), group = $("fan-group"), float = $("fan-float");
+    new IntersectionObserver(([e]) => float.classList.toggle("paused", !e.isIntersecting)).observe(fan);
+    if (reduced || !matchMedia("(pointer:fine)").matches) return;
+    let box = null;
+    fan.addEventListener("pointerenter", () => (box = fan.getBoundingClientRect()));
+    fan.addEventListener("pointermove", (e) => {
+      if (!box) return;
+      const x = (e.clientX - box.left) / box.width - 0.5, y = (e.clientY - box.top) / box.height - 0.5;
+      group.style.transform = `rotateX(${(-y * 8).toFixed(2)}deg) rotateY(${(x * 10).toFixed(2)}deg)`;
+      for (const s of fan.querySelectorAll(".mcard-sheen")) s.style.transform = `translateX(${(x * 60).toFixed(1)}%)`;
+    });
+    fan.addEventListener("pointerleave", () => { group.style.transform = ""; for (const s of fan.querySelectorAll(".mcard-sheen")) s.style.transform = ""; });
+  })();
+
+  /* ---------- the walkthrough: a recorded run, played step by step ---------- */
+  const JOBS = [
+    { id: "A", finish: "steel", total: 14 },
+    { id: "B", finish: "ink", total: 10 },
+    { id: "C", finish: "clay", total: 10 },
+  ];
+  const PROVS = [
+    { id: "model-basic", label: "basic", price: 0.01, ms: 400 },
+    { id: "model-standard", label: "standard", price: 0.02, ms: 700 },
+    { id: "model-premium", label: "premium", price: 0.05, ms: 1200 },
+    { id: "search", label: "search", price: 0.02, ms: 500 },
+    { id: "lookup", label: "lookup", price: 0.03, ms: 500 },
+  ];
+  const STEP_NAMES = ["", "Hold", "Fund", "Pay per step", "Shock", "Receipt"];
+  const ui = { cards: {}, wallets: {}, provs: {} };
+
+  function buildStage() {
+    for (const j of JOBS) {
+      const amount = el("div", { class: "mcard-amount num" });
+      const meter = el("i");
+      const stamp = el("span", { class: "mcard-stamp" });
+      const tag = el("span", { class: "mcard-bottom-l" });
+      const card = el("div", { class: "mcard " + j.finish },
+        el("div", { class: "mcard-body" }, el("div", { class: "mcard-sheen" }),
+          el("div", { class: "mcard-top" }, el("span", { text: "METER" }), el("span", { class: "mcard-tag", text: "Customer " + j.id })),
+          el("div", { class: "mcard-chip" }),
+          el("div", { class: "mcard-mid" }, amount, el("div", { class: "mcard-meter" }, meter)),
+          el("div", { class: "mcard-bottom" }, tag, el("span", { text: "•••• 0008" }))),
+        stamp);
+      $("st-cards").append(card);
+      ui.cards[j.id] = { card, amount, meter, stamp, tag };
+      const dep = el("b", { class: "num" }), spent = el("b", { class: "num" }), paras = el("b", { class: "num" }), route = el("div", { class: "route" });
+      const w = el("div", { class: "wallet" }, el("small", { text: "Job " + j.id + " wallet" }),
+        el("div", { class: "row" }, el("span", { text: "In" }), dep), el("div", { class: "row" }, el("span", { text: "Paid" }), spent),
+        el("div", { class: "row" }, el("span", { text: "Paras" }), paras), route);
+      $("st-wallets").append(w);
+      ui.wallets[j.id] = { w, dep, spent, paras, route };
+    }
+    for (const p of PROVS) {
+      const span = el("span", { class: "num" });
+      const node = el("div", { class: "prov" }, el("b", { text: p.label }), span);
+      $("st-provs").append(node);
+      ui.provs[p.id] = { node, span, p };
+    }
+  }
+
+  function fresh() {
+    const jobs = {};
+    for (const j of JOBS) jobs[j.id] = { held: false, hold: 0, dep: 0, spent: 0, done: 0, total: j.total, captured: null, released: null, route: "model-basic", raised: false };
+    return { jobs, float: 1.5, reserve: 1.5, slow: null, ask: null, approved: false };
+  }
+
+  const stepLabel = (s) => { const [k, n] = String(s).split("-"); return k === "model" ? "paragraph " + n : k + " " + n; };
+  const short = (t, n = 170) => (t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/, "") + "…" : t);
+
+  /** Applies one recorded event to the state. Returns what to show and animate, or null for events the stage ignores. */
+  function apply(st, e) {
+    const d = e.data, j = e.job && st.jobs[e.job];
+    switch (e.type) {
+      case "run.started": st.float = dollars(d.float); st.reserve = st.float; return null;
+      case "hold.placed": j.held = true; j.hold = dollars(d.amount); return { text: `Customer ${e.job} approved a ${d.amount} hold on the card. Nothing is charged yet.`, who: "Airwallex · hold placed", lift: e.job, wait: 900 };
+      case "float.deposited": j.dep = dollars(d.deposited); st.reserve = dollars(d.reserve); return { text: `$${dollars(d.amount).toFixed(2)} moved from the float into job ${e.job}'s wallet. Reserve now ${usd(d.reserve)}.`, who: "Metal · deposit", coin: { from: "vault", to: "w" + e.job, kind: "float" }, wait: 750 };
+      case "payment": j.spent = dollars(d.spent); return { text: `Job ${e.job} paid ${d.provider} ${usd(d.price)} for ${stepLabel(d.step)}.${d.status === 200 ? "" : " It failed after payment, so it still costs its price."}`, who: "Metal · payment", coin: { from: "w" + e.job, to: d.provider, kind: "pay" }, hit: d.provider, wait: 0 };
+      case "report.text": if (String(d.step).startsWith("model")) j.done++; return null;
+      case "step.upgraded": return { text: `Claude chose ${d.provider} for paragraph ${d.paragraph} of job ${e.job}: ${short(d.reason, 120)}`, who: "Claude · judgment", wait: 1300 };
+      case "shock.overrun": j.total = d.paragraphsNow; return { text: `Job ${e.job}'s report grows to ${d.paragraphsNow} paragraphs, four times the plan.`, who: "Shock", lift: e.job, wait: 1600 };
+      case "shock.slowdown": st.slow = d.provider; return { text: `${d.provider} slows to ${d.latencyMs / 1000} seconds an answer.`, who: "Shock", wait: 1500 };
+      case "plan.revised": {
+        const ok = (d.decisions || []).filter((x) => x.accepted).length, all = (d.decisions || []).length;
+        return { text: short(d.planner?.summary || d.reason, 190), who: `Claude's plan · ${ok} of ${all} proposals allowed by the money rules`, wait: 2400 };
+      }
+      case "hold.raise_requested": st.ask = { job: e.job, from: d.from, to: d.to, message: d.message }; return { text: `Claude asks customer ${e.job} to raise the hold from ${d.from} to ${d.to}.`, who: "Ask before spending", ask: true, wait: 3600 };
+      case "hold.raise_approved": st.approved = true; return { text: `Customer ${e.job} approved ${d.to} on the dashboard.`, who: "Customer", ask: true, wait: 1400 };
+      case "hold.raised": j.hold = dollars(d.authorized); j.raised = true; st.ask = null; return { text: `Airwallex raised the hold to ${d.authorized}. Only now may job ${e.job} spend past its first hold.`, who: "Airwallex · hold raised", lift: e.job, wait: 1500 };
+      case "job.rerouted": j.route = d.to; return { text: `Job ${e.job} moves to ${d.to}. ${short(d.reason, 120)}`, who: "Reroute", wait: 1800 };
+      case "hold.captured": j.captured = dollars(d.captured); j.released = Math.round((dollars(d.authorized) - j.captured) * 100) / 100; return { text: `Card ${e.job} charged ${d.captured}, exactly what its wallet paid. $${j.released.toFixed(2)} of the hold released.`, who: "Airwallex · capture", lift: e.job, wait: 1500 };
+      case "reconcile.float": return { text: `Float accounted for: ${usd(d.accounted)} of ${usd(d.float)}.`, who: "Reconcile", wait: 1000 };
+      case "run.finished": return { text: "Reconciled. Every charge equals its wallet's payments, and every payment matches Metal's settlement records.", who: "Done", wait: 0 };
+      default: return null;
+    }
+  }
+
+  function render(st) {
+    for (const j of JOBS) {
+      const s = st.jobs[j.id], c = ui.cards[j.id], w = ui.wallets[j.id];
+      const charged = s.captured !== null;
+      c.amount.textContent = "";
+      c.amount.append(document.createTextNode(s.held ? (charged ? usd(s.captured) : usd(s.hold)) : "—"), el("small", { text: !s.held ? "waiting" : charged ? "charged" : s.raised ? "hold, raised" : "hold" }));
+      c.meter.style.transform = `scaleX(${s.hold ? Math.min(s.spent / s.hold, 1).toFixed(3) : 0})`;
+      c.tag.textContent = charged ? `$${s.released.toFixed(2)} released` : s.held ? `${usd(s.spent)} spent` : "No hold yet";
+      c.card.style.opacity = s.held ? "1" : ".45";
+      c.stamp.textContent = charged ? "Paid in full" : s.raised ? "Raised" : "";
+      c.stamp.classList.toggle("on", charged || s.raised);
+      w.dep.textContent = usd(s.dep);
+      w.spent.textContent = usd(s.spent);
+      w.paras.textContent = `${s.done}/${s.total}`;
+      w.route.textContent = "on " + s.route.replace("model-", "");
+    }
+    $("st-reserve").textContent = usd(st.reserve);
+    $("st-reserve-bar").style.transform = `scaleX(${(st.reserve / st.float).toFixed(3)})`;
+    for (const p of PROVS) {
+      const slow = st.slow === p.id;
+      ui.provs[p.id].node.classList.toggle("slow", slow);
+      ui.provs[p.id].span.textContent = `${Math.round(p.price * 100)}¢ · ${slow ? "6000" : p.ms} ms`;
+    }
+    const ask = $("st-ask");
+    if (st.ask) {
+      ask.replaceChildren(
+        el("div", { class: "amounts" }, el("b", { text: `Customer ${st.ask.job}: ${st.ask.from} → ${st.ask.to}` })),
+        el("div", { text: "“" + short(st.ask.message, 210) + "”" }),
+        el("div", { class: "row" }, el("span", { class: "pill yes" + (st.approved ? " pressed" : ""), text: st.approved ? "Approved" : "Approve " + st.ask.to }), el("span", { class: "pill", text: "Decline" })));
+    }
+    ask.classList.toggle("on", !!st.ask);
+  }
+
+  function ticker(note) {
+    $("st-ticker").replaceChildren(el("span", { class: "tk-who", text: note.who }), document.createTextNode(note.text));
+  }
+
+  /* Anchor points for coins, measured once per step and on resize, never during an animation. */
+  let anchors = {};
+  function measure() {
+    const base = $("stage").getBoundingClientRect();
+    const at = (node) => { const r = node.getBoundingClientRect(); return { x: r.left - base.left + r.width / 2, y: r.top - base.top + r.height / 2 }; };
+    anchors = { vault: at($("vault")) };
+    for (const j of JOBS) anchors["w" + j.id] = at(ui.wallets[j.id].w);
+    for (const p of PROVS) anchors[p.id] = at(ui.provs[p.id].node);
+  }
+
+  function coin({ from, to, kind }, ms) {
+    const a = anchors[from], b = anchors[to];
+    if (!a || !b || reduced) return;
+    const c = el("div", { class: "coin" + (kind === "float" ? " float" : "") });
+    $("st-coins").append(c);
+    const mx = (a.x + b.x) / 2, my = Math.min(a.y, b.y) - 24;
+    c.animate([
+      { transform: `translate(${a.x}px,${a.y}px) scale(.5)`, opacity: 0 },
+      { transform: `translate(${a.x}px,${a.y}px) scale(1)`, opacity: 1, offset: 0.12 },
+      { transform: `translate(${mx}px,${my}px) scale(1)`, opacity: 1, offset: 0.55 },
+      { transform: `translate(${b.x}px,${b.y}px) scale(.7)`, opacity: 0 },
+    ], { duration: ms, easing: "cubic-bezier(.4,0,.2,1)" }).finished.then(() => c.remove(), () => c.remove());
+  }
+
+  function hit(id) {
+    const n = ui.provs[id]?.node;
+    if (!n || reduced) return;
+    n.classList.add("hit");
+    setTimeout(() => n.classList.remove("hit"), 180);
+  }
+
+  function lift(job) {
+    const c = ui.cards[job]?.card;
+    if (!c || reduced) return;
+    c.classList.add("lift");
+    setTimeout(() => c.classList.remove("lift"), 700);
+  }
+
+  let events = [], bounds = [], token = 0, active = 1, visible = false;
+
+  /** Where each step starts and ends in the recording, found by event type, not by position. */
+  function segment(evs) {
+    const last = (t) => evs.reduce((i, e, k) => (e.type === t ? k : i), -1);
+    const first = (t) => evs.findIndex((e) => e.type === t);
+    const holds = last("hold.placed"), funded = first("run.funded"), shock = first("shock.overrun"), reroute = last("job.rerouted");
+    return [null, [0, holds], [holds + 1, funded], [funded + 1, shock - 1], [shock, reroute], [reroute + 1, evs.length - 1]];
+  }
+
+  async function play(step) {
+    const my = ++token;
+    for (const c of $("st-coins").getAnimations ? $("st-coins").children : []) c.getAnimations().forEach((a) => a.cancel());
+    $("st-coins").replaceChildren();
+    $("st-step").textContent = step;
+    $("st-name").textContent = STEP_NAMES[step];
+    if (!events.length) return;
+    const [from, to] = bounds[step];
+    const st = fresh();
+    for (let i = 0; i < from; i++) apply(st, events[i]);
+    render(st);
+    measure();
+    // Step 3 shows each payment; step 5 has fifty more, so they pass quickly before the receipts.
+    const payWait = step === 3 ? 420 : 70;
+    let last = null;
+    for (let i = from; i <= to; i++) {
+      const note = apply(st, events[i]);
+      if (!note) continue;
+      if (reduced) { last = note; continue; }
+      if (my !== token) return;
+      render(st);
+      ticker(note);
+      if (note.coin) coin(note.coin, events[i].type === "payment" && step !== 3 ? 420 : 760);
+      if (note.hit) setTimeout(() => hit(note.hit), events[i].type === "payment" && step !== 3 ? 400 : 700);
+      if (note.lift) lift(note.lift);
+      await sleep(events[i].type === "payment" ? payWait : note.wait);
+      if (my !== token) return;
+    }
+    if (reduced) { render(st); if (last) ticker(last); }
+  }
+
+  function activate(step, force) {
+    if (step === active && !force) return;
+    active = step;
+    for (const li of document.querySelectorAll(".wstep")) li.classList.toggle("on", Number(li.dataset.step) === step);
+    if (visible) play(step);
+  }
+
+  buildStage();
+  render(fresh());
+  activate(1, true);
+  fetch("/api/recordings/kit12").then((r) => (r.ok ? r.text() : Promise.reject(r.status))).then((txt) => {
+    events = txt.trim().split("\n").map((l) => JSON.parse(l));
+    bounds = segment(events);
+    if (visible) play(active);
+    else ticker({ who: "Recorded log", text: "Scroll on to play the run." });
+  }).catch(() => ticker({ who: "Recording unavailable", text: "Run the server with pnpm start, or open the app's replay." }));
+
+  // The step crossing the reading line is the active one: mid-screen on desktop, below the sticky stage on a phone. No scroll listeners.
+  const narrow = matchMedia("(max-width:860px)").matches;
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) activate(Number(e.target.dataset.step));
+  }, { rootMargin: narrow ? "-76% 0px -23% 0px" : "-49% 0px -50% 0px" });
+  for (const li of document.querySelectorAll(".wstep")) {
+    io.observe(li);
+    li.querySelector("button").addEventListener("click", () => {
+      activate(Number(li.dataset.step), true);
+      // On a phone the tapped step is already in view below the stage; on desktop, bring it to the middle.
+      if (narrow) return;
+      const r = li.getBoundingClientRect();
+      scrollTo({ top: scrollY + r.top + r.height / 2 - innerHeight / 2, behavior: reduced ? "auto" : "smooth" });
+    });
+  }
+  new IntersectionObserver(([e]) => {
+    const was = visible;
+    visible = e.isIntersecting;
+    if (visible && !was && events.length) play(active);
+    if (!visible) token++; // stop playing off-screen
+  }).observe($("stage"));
+  $("st-replay").addEventListener("click", () => play(active));
+  new ResizeObserver(() => measure()).observe($("stage"));
+
+  /* ---------- "when things go wrong" tabs ---------- */
   const PANELS = {
     overrun: { title: "Kit 12 run", when: "11 Nov 2026", src: "research/live-kit12-run.jsonl", rows: [
       ["Shock", "Job B grows from 10 paragraphs to 40, and the cheapest provider slows to 6 seconds."],
@@ -318,11 +744,10 @@ pnpm check:evidence</pre>
       ["Again", "Running recovery a second time changes nothing."],
     ] },
   };
-  const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) k === "class" ? (n.className = v) : k === "text" ? (n.textContent = v) : n.setAttribute(k, v); n.append(...kids); return n; };
   function show(id) {
     const p = PANELS[id];
     document.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
-    document.getElementById("panel").replaceChildren(el("div", { class: "log" },
+    $("panel").replaceChildren(el("div", { class: "log" },
       el("h4", {}, el("span", { text: p.title }), el("span", { text: "recorded " + p.when })),
       el("ol", {}, ...p.rows.map(([k, v, hot]) => el("li", { class: hot ? "hot" : "" }, el("b", { text: k }), el("span", { text: v })))),
       el("div", { class: "src", text: p.src })));
@@ -330,11 +755,10 @@ pnpm check:evidence</pre>
   document.querySelectorAll("[data-tab]").forEach((b) => (b.onclick = () => show(b.dataset.tab)));
   show("overrun");
 
-  // The stage is the real app at desktop size, scaled to fit. It loads when it scrolls into view.
-  const screen = document.getElementById("screen"), live = document.getElementById("live");
-  const fit = () => (live.style.transform = `scale(${screen.clientWidth / 1320})`);
-  new ResizeObserver(fit).observe(screen);
-  new IntersectionObserver((entries, io) => { if (entries.some((e) => e.isIntersecting)) { live.src = live.dataset.src; io.disconnect(); } }, { rootMargin: "200px" }).observe(screen);
+  /* ---------- the real app, scaled to fit; loads when it scrolls into view ---------- */
+  const screen = $("screen"), live = $("live");
+  new ResizeObserver(() => (live.style.transform = `scale(${screen.clientWidth / 1320})`)).observe(screen);
+  new IntersectionObserver((entries, o) => { if (entries.some((e) => e.isIntersecting)) { live.src = live.dataset.src; o.disconnect(); } }, { rootMargin: "200px" }).observe(screen);
 </script>
 </body>
 </html>

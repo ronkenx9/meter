@@ -22,7 +22,7 @@ Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, p
 - [x] G4: .env is git-ignored and no tracked or untracked-unignored file holds a credential-shaped value
   CHECK: node scripts/check-secrets.mjs
   EXPECT: SECRETS_OK
-  EVIDENCE: automatic-evidence=v1; definition-sha256=d5745ed02f7bde11630a9ef2d480f159583fb4976894d83abf957945bee078aa; exit=0; EXPECT=matched; output-sha256=1d54f9875f4314f8f3b062aec167e041b851ed6f6a343a5eccc34b5f750fd2bd; output-bytes=22; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=d5745ed02f7bde11630a9ef2d480f159583fb4976894d83abf957945bee078aa; exit=0; EXPECT=matched; output-sha256=a5f27dfd29bc173ea3396f972b99be2bc09584bc89ab1613cf370e24e18dade3; output-bytes=23; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries
 
 - [x] G5: Metal's testnet facilitator is up and advertises a bajillion clearing deployment on eip155:63825
   CHECK: node scripts/probe-metal.mjs
@@ -77,7 +77,7 @@ Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, p
 - [x] G14: 10,000 random runs through the real engine and rules, half of them planned by a planner proposing nonsense, break no money rule
   CHECK: node apps/orchestrator/scripts/check-sim.ts 10000
   EXPECT: SIM_OK 10000 runs, 0 violations
-  EVIDENCE: automatic-evidence=v1; definition-sha256=3faebd2e23f7cfeb970555d79c17346cfdcce6ed3533ffbd349e940f699b9101; exit=0; EXPECT=matched; output-sha256=578131de9f13c1428d0db3e21b0679551add2e33c393501b3785912a30b11a3d; output-bytes=212; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=3faebd2e23f7cfeb970555d79c17346cfdcce6ed3533ffbd349e940f699b9101; exit=0; EXPECT=matched; output-sha256=e2d23b3ee90a615a10d991da07ec9857cb3727d9898879b88f98a87ea03eba8d; output-bytes=212; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries
 
 - [x] G15: a live provider's offer named another payee: the wallet signed nothing, the provider was blocked, the step was bought elsewhere, and the charge equals what was paid
   CHECK: node scripts/check-drills.mjs swapped-payee research/live-swapped-payee-drill.jsonl
@@ -93,3 +93,8 @@ Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, p
   CHECK: node scripts/check-claude-run.mjs research/live-kit12-no-raise-run.jsonl --no-raise && node scripts/check-live-evidence.mjs research/live-kit12-no-raise-run.jsonl
   EXPECT: CLAUDE_RUN_OK no raise needed
   EVIDENCE: automatic-evidence=v1; definition-sha256=61476d8f68498d6600ff1e549f9d0881747e180731028170bf435fc50b212ca6; exit=0; EXPECT=matched; output-sha256=3bfa096330ae95f5a06406803af29e0cc8a5a8258d61353490bc09e90be9ca6d; output-bytes=135; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries
+
+- [x] G18: the landing page, app, docs and approval page are served, every same-site link and docs anchor resolves, and the landing walkthrough plays the recorded run byte for byte
+  CHECK: node scripts/check-pages.mjs
+  EXPECT: PAGES_OK
+  EVIDENCE: automatic-evidence=v1; definition-sha256=27d8d4daae708cfe1961f243bb6e51f543eb929d6405d47b38c1ccbc4b7b4012; exit=0; EXPECT=matched; output-sha256=fac62b3fd1ac9b570c7b05cedf1397d3c71dcf6a03ed49c6589ea45dba66b839; output-bytes=88; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries

@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>METER · Docs</title>
+<meta name="description" content="How METER works, how to run it with or without keys, the money rules and where they live in the code, the drills, the checks and the API." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root { --g:#F5F5F5; --t2:rgba(0,0,0,.56); --t3:rgba(0,0,0,.4); --rule:rgba(0,0,0,.12); --fill:rgba(0,0,0,.04); --clay:#E8552D; --clay-deep:#B8401C; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; scroll-padding-top:96px; }
+  body { margin:0; background:var(--g); color:#000; font:500 16px/24px "Inter Tight",system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; }
+  a:focus-visible, button:focus-visible { outline:2px solid #000; outline-offset:3px; }
+  .nav-wrap { position:fixed; top:16px; left:0; right:0; z-index:50; display:flex; justify-content:center; padding:0 16px; pointer-events:none; }
+  .nav { pointer-events:auto; display:flex; align-items:center; gap:4px; height:52px; padding:4px 4px 4px 24px; border-radius:26px; background:rgba(225,225,225,.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); width:min(862px,100%); }
+  .brand { display:flex; align-items:center; gap:9px; font-size:17px; letter-spacing:-.03em; margin-right:auto; font-weight:600; text-decoration:none; }
+  .nav ul { display:flex; list-style:none; margin:0; padding:0; gap:4px; }
+  .nav li a { display:flex; align-items:center; height:44px; padding:4px 16px; font-size:14px; border-radius:22px; text-decoration:none; }
+  .nav li a:hover { background:rgba(0,0,0,.05); } .nav li a[aria-current="page"] { background:rgba(0,0,0,.07); }
+  .btn { display:inline-flex; align-items:center; justify-content:center; height:44px; padding:4px 24px; border-radius:999px; font-size:14px; background:#000; color:#F5F5F5; text-decoration:none; }
+
+  .layout { max-width:1180px; margin:0 auto; padding:120px 40px 120px; display:grid; grid-template-columns:220px minmax(0,1fr); gap:56px; }
+  aside { position:sticky; top:104px; align-self:start; max-height:calc(100vh - 128px); overflow:auto; }
+  aside ol { list-style:none; margin:0; padding:0; display:grid; gap:2px; }
+  aside a { display:block; padding:6px 12px; border-radius:10px; font-size:14px; color:var(--t2); text-decoration:none; }
+  aside a:hover { background:rgba(0,0,0,.04); color:#000; }
+  aside a.on { background:#fff; color:#000; }
+  aside .label { font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--t3); padding:14px 12px 6px; }
+
+  article { min-width:0; }
+  .eyebrow { font-size:10px; line-height:16px; letter-spacing:.06em; text-transform:uppercase; color:var(--t3); }
+  h1 { margin:16px 0 0; font-weight:500; font-size:44px; line-height:1; letter-spacing:-.03em; }
+  .lede { margin:16px 0 0; color:var(--t2); font-size:18px; line-height:26px; max-width:640px; }
+  section { padding-top:72px; }
+  h2 { margin:0; font-weight:500; font-size:28px; line-height:1.1; letter-spacing:-.02em; }
+  h3 { margin:28px 0 0; font-weight:500; font-size:18px; letter-spacing:-.01em; }
+  p { margin:14px 0 0; max-width:720px; color:#2a2a2a; }
+  ul.list, ol.list { margin:14px 0 0; padding-left:20px; max-width:720px; color:#2a2a2a; }
+  ul.list li, ol.list li { margin:6px 0; }
+  code { font:400 .88em ui-monospace,SFMono-Regular,Menlo,monospace; background:rgba(0,0,0,.06); padding:.1em .35em; border-radius:6px; }
+  pre { margin:16px 0 0; background:#141414; color:#EDEDED; border-radius:18px; padding:18px 20px; overflow:auto; font:400 13.5px/22px ui-monospace,SFMono-Regular,Menlo,monospace; max-width:760px; }
+  pre code { background:none; padding:0; color:inherit; font-size:inherit; }
+  .card { margin-top:20px; background:#fff; border-radius:24px; padding:24px 26px; max-width:760px; }
+  .card p:first-child { margin-top:0; }
+  table { margin-top:18px; width:100%; max-width:760px; border-collapse:collapse; font-size:14px; line-height:20px; background:#fff; border-radius:18px; overflow:hidden; }
+  th, td { text-align:left; padding:11px 14px; vertical-align:top; border-top:1px solid var(--rule); }
+  th { font-weight:500; color:var(--t2); font-size:12px; border-top:0; background:#fafafa; }
+  td code { white-space:nowrap; }
+  .steps { margin-top:20px; display:grid; gap:10px; max-width:760px; counter-reset:s; list-style:none; padding:0; }
+  .steps li { background:#fff; border-radius:18px; padding:16px 18px 16px 58px; position:relative; }
+  .steps li::before { counter-increment:s; content:counter(s); position:absolute; left:18px; top:16px; width:26px; height:26px; border-radius:50%; background:#000; color:#fff; display:grid; place-items:center; font-size:12px; }
+  .steps b { font-weight:500; display:block; }
+  .steps span { color:var(--t2); font-size:15px; }
+  .note { margin-top:18px; max-width:760px; border-radius:16px; padding:14px 16px; background:#FBE4DC; color:#5a2310; font-size:15px; }
+  .rule { display:grid; grid-template-columns:auto 1fr; gap:4px 14px; }
+  footer { border-top:1px solid var(--rule); max-width:1180px; margin:0 auto; padding:32px 40px 64px; color:var(--t2); font-size:14px; display:flex; gap:24px; flex-wrap:wrap; }
+  footer a { color:var(--t2); }
+
+  @media (max-width:900px) {
+    .nav ul { display:none; } .nav { padding-left:18px; }
+    .layout { grid-template-columns:1fr; padding:104px 20px 80px; gap:24px; }
+    aside { position:static; max-height:none; background:#fff; border-radius:18px; padding:8px; }
+    aside ol { grid-template-columns:1fr 1fr; } aside .label { grid-column:1 / -1; padding-top:8px; }
+    h1 { font-size:34px; } section { padding-top:56px; }
+    table { display:block; overflow-x:auto; } th, td { min-width:120px; }
+    footer { padding:28px 20px 48px; }
+  }
+  @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+</style>
+</head>
+<body>
+<header class="nav-wrap">
+  <nav class="nav" aria-label="METER">
+    <a class="brand" href="/" aria-label="METER home">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="5" width="16" height="8" rx="4" fill="none" stroke="#000" stroke-width="2"/><rect x="3.5" y="7.5" width="6" height="3" rx="1.5" fill="#E8552D"/></svg>
+      <span>METER</span>
+    </a>
+    <ul>
+      <li><a href="/#how">How it works</a></li>
+      <li><a href="/docs" aria-current="page">Docs</a></li>
+      <li><a href="https://github.com/ronkenx9/meter">GitHub</a></li>
+    </ul>
+    <a class="btn" href="/app">Open app</a>
+  </nav>
+</header>
+
+<div class="layout">
+  <aside aria-label="On this page">
+    <ol id="toc">
+      <li class="label">Start</li>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#quickstart">Quick start, no keys</a></li>
+      <li><a href="#app">Using the app</a></li>
+      <li class="label">How it works</li>
+      <li><a href="#run">A run, step by step</a></li>
+      <li><a href="#rules">The money rules</a></li>
+      <li><a href="#agent">What Claude does</a></li>
+      <li class="label">Run it live</li>
+      <li><a href="#live">Live setup</a></li>
+      <li><a href="#drills">Drills and recovery</a></li>
+      <li class="label">Reference</li>
+      <li><a href="#checks">Checks and proof</a></li>
+      <li><a href="#api">HTTP API</a></li>
+      <li><a href="#layout">Code layout</a></li>
+      <li><a href="#limits">Known limits</a></li>
+    </ol>
+  </aside>
+
+  <article>
+    <p class="eyebrow">Docs</p>
+    <h1>How METER works</h1>
+    <p class="lede">A card hold up front, a payment for every step of the work, and a charge for exactly what was spent. This page covers running it, the rules that keep the money safe, and how to check every claim yourself.</p>
+
+    <section id="overview">
+      <h2>Overview</h2>
+      <p>METER is an AI research service built for the Airwallex Agentic Banking Hackathon, <a href="https://airwallexdev.com/guide#12-inference-sourcing-agent">Kit 12: Inference Sourcing Agent</a>. Several customers each order a report. An agent buys every paragraph, search and lookup from paid providers, shares a short float of working money between the jobs, and never charges anyone past the hold they approved.</p>
+      <ul class="list">
+        <li><b>Airwallex</b> holds each customer's card: a pre-authorization, raised only with the customer's yes, and captured once.</li>
+        <li><b>Metal</b> pays the providers: each request is paid over x402 from a job's own clearing wallet on Metal testnet.</li>
+        <li><b>Claude</b> plans and writes: it proposes who moves provider, who gets the reserve and which customer to ask, and three Claude models write the paragraphs. Every proposal passes money rules in code before anything moves.</li>
+      </ul>
+      <p>Everything is test money: the Airwallex sandbox, Airwallex's test card and Metal testnet.</p>
+    </section>
+
+    <section id="quickstart">
+      <h2>Quick start, no keys</h2>
+      <p>You need Node 23.6 or newer and pnpm.</p>
+<pre><code>pnpm install
+pnpm start          # http://localhost:4378</code></pre>
+      <ol class="steps">
+        <li><b>Open <a href="/">localhost:4378</a></b><span>The landing page walks through a recorded live run in five steps.</span></li>
+        <li><b>Open <a href="/app">/app</a> and click Replay</b><span>Pick a recording. The app plays it back from its hash-chained log, after checking the chain.</span></li>
+        <li><b>Click Run simulation</b><span>The same engine and money rules on simulated rails, with the rule planner instead of Claude.</span></li>
+      </ol>
+      <p>Then check the money rules yourself. None of these need keys:</p>
+<pre><code>pnpm test            # 108 tests
+pnpm check:sim       # 10,000 random runs, about 25 seconds
+pnpm check:evidence  # re-checks every recorded live run</code></pre>
+    </section>
+
+    <section id="app">
+      <h2>Using the app</h2>
+      <p>The app at <code>/app</code> is the operator's view of one run. Read it top to bottom.</p>
+      <table>
+        <thead><tr><th>Part</th><th>What it shows</th></tr></thead>
+        <tbody>
+          <tr><td>Header</td><td><b>Replay</b> plays a recording; <b>Run simulation</b> needs no keys; <b>Run live</b> uses the Airwallex sandbox and Metal testnet and is off until the keys are set. The pill says which mode you're watching.</td></tr>
+          <tr><td>Progress</td><td>The run's five steps: Holds, Fund, Pay per step, Shock, Receipt. The current step is outlined.</td></tr>
+          <tr><td>Float bar</td><td>METER's working money. The bar is the reserve left, the clay line is the floor it may never go below.</td></tr>
+          <tr><td>Job cards</td><td>One per customer: spent so far against the hold, deposited into its wallet, route, paragraphs, and the last payments. A request for a higher hold appears here with Approve and Decline.</td></tr>
+          <tr><td>Break it</td><td>The drills, for a live run. See <a href="#drills">Drills and recovery</a>.</td></tr>
+          <tr><td>Market</td><td>Each provider's price and speed, from its next x402 offer. A provider slower than 3 seconds shows in clay.</td></tr>
+          <tr><td>Decisions</td><td>Every plan Claude proposed, and for each proposal whether the money rules allowed or refused it, and why.</td></tr>
+          <tr><td>Proof</td><td>As jobs close: card charge against wallet record, wallet records against Metal's settlements, and whether the log's hash chain is intact.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="run">
+      <h2>A run, step by step</h2>
+      <p>Each step leaves events in the run's log. The figures are from the recorded run in <code>research/live-kit12-run.jsonl</code>.</p>
+      <ol class="steps">
+        <li><b>Holds</b><span>Each customer approves a pre-auth hold on the hosted Airwallex card page: $1.00, $0.75 and $0.75. Nothing is charged. A hold nobody approves is cancelled after 15 minutes. Events: <code>hold.placed</code>.</span></li>
+        <li><b>Fund</b><span>METER deposits part of its 1.50 USDZ float into a fresh clearing wallet per job ($0.25, $0.20, $0.20) and keeps the rest as reserve. Every deposit lands before any job starts, because a deposit only pays from Metal's next epoch. Events: <code>float.deposited</code>, <code>run.funded</code>.</span></li>
+        <li><b>Pay per step</b><span>Each step is one paid request over x402: a paragraph costs 1, 2 or 5 cents by model tier, a search 2 and a lookup 3. Claude picks the few paragraphs worth the dearer tier. Events: <code>payment</code>, <code>report.text</code>, <code>step.upgraded</code>.</span></li>
+        <li><b>Shock</b><span>Midway, one job's report grows fourfold and the cheapest provider slows to 6 seconds. Claude proposes a new plan; code checks it. If a job can only finish by passing its hold and the float can fund it, the customer is asked to raise it; nothing is spent past the old hold until the yes. Events: <code>shock.overrun</code>, <code>plan.revised</code>, <code>hold.raise_requested</code>, <code>hold.raised</code>, <code>job.rerouted</code>.</span></li>
+        <li><b>Receipt</b><span>Each card is captured once, for exactly what its wallet paid; the rest of the hold is released. Unused float is withdrawn from clearing, which Metal allows about 20 minutes after a job's last payment. Then the run reconciles. Events: <code>hold.captured</code>, <code>reconcile.*</code>, <code>run.finished</code>.</span></li>
+      </ol>
+    </section>
+
+    <section id="rules">
+      <h2>The money rules</h2>
+      <p>Claude can propose anything. These rules decide what happens, and they are plain functions in <code>packages/policy</code>, checked in order against a running copy of the books so two proposals can't together break one.</p>
+      <table>
+        <thead><tr><th>Rule</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>A job's deposits never pass its card hold, so its spend can't either.</td><td><code>checkTopUp</code> in <code>money.ts</code></td></tr>
+          <tr><td>The reserve never drops below its floor.</td><td><code>checkTopUp</code>, <code>checkPlan</code></td></tr>
+          <tr><td>A hold is raised, with the customer's yes, before any deposit past the old hold.</td><td><code>checkIncrement</code>; order in <code>engine.ts</code></td></tr>
+          <tr><td>The capture equals the wallet's own record of payments, once; a mismatch blocks the close for a person.</td><td><code>closeAction</code></td></tr>
+          <tr><td>The wallet signs nothing unless the offer pays that provider's own key at no more than the quoted price. A provider that tries is blocked for the run.</td><td><code>onBeforePaymentCreation</code> in <code>packages/metal/src/job-wallet.ts</code></td></tr>
+          <tr><td>No offer above the clearing cap of 5 cents is paid.</td><td><code>maxAmount</code> in the clearing client</td></tr>
+          <tr><td>A customer is asked to raise a hold at most 3 times, and never twice at once.</td><td><code>MAX_ASKS</code> in <code>engine.ts</code></td></tr>
+          <tr><td>Every dollar of float is in the reserve or in a job's wallet; anything else fails reconciliation.</td><td><code>reconcile</code> in <code>engine.ts</code></td></tr>
+        </tbody>
+      </table>
+      <div class="note">To see the rules hold, run <code>pnpm check:sim</code>. It plays 10,000 random scenarios, half planned by a planner that proposes nonsense on purpose, and checks every rule after each one. Remove a rule from <code>packages/policy</code> and it fails within a few runs.</div>
+    </section>
+
+    <section id="agent">
+      <h2>What Claude does</h2>
+      <p>Claude has two jobs and no keys. It never sees card data or signs a payment.</p>
+      <h3>Planning</h3>
+      <p><code>claude-opus-5-5</code> reads the whole situation when something changes (a job can't afford its next step, the shock, a customer's answer) and returns typed proposals:</p>
+      <ul class="list">
+        <li><code>reroute</code>: move a job to another provider.</li>
+        <li><code>grant_reserve</code>: move reserve into a job's wallet.</li>
+        <li><code>ask_hold_raise</code>: ask a customer for a higher hold, in its own words.</li>
+        <li><code>pause</code>: stop a job.</li>
+      </ul>
+      <p>Each proposal is shown in the app with its verdict. Without a Claude key, the rule planner in <code>apps/orchestrator/src/planner.ts</code> takes over and the app says so.</p>
+      <h3>Writing</h3>
+      <p>The three model providers are real models: <code>claude-haiku-5-5</code> (1¢), <code>claude-sonnet-5-5</code> (2¢) and <code>claude-opus-5-5</code> (5¢). Each paragraph is written knowing its position in the report. Search and lookup have no web access; they are labelled as notes.</p>
+    </section>
+
+    <section id="live">
+      <h2>Live setup</h2>
+      <ol class="steps">
+        <li><b>Copy <code>.env.example</code> to <code>.env</code></b><span>It is git-ignored. Never commit keys.</span></li>
+        <li><b>Airwallex</b><span>Sign up at sandbox.airwallex.com and add a business named <code>New Business Sandbox</code>; it is approved automatically and has Payments. Put its Client ID and API key in <code>AWX_CLIENT_ID</code> and <code>AWX_API_KEY</code>.</span></li>
+        <li><b>Metal</b><span>Run <code>pnpm setup:metal</code>. It creates a testnet operator key, funds it from the public faucet and buys an RPC endpoint over x402, writing <code>METAL_OPERATOR_KEY</code> and <code>METAL_RPC_URL</code>. Safe to run again.</span></li>
+        <li><b>Claude</b><span>Put a key in <code>ANTHROPIC_API_KEY</code> (and <code>ANTHROPIC_WORKSPACE_ID</code> only if the key isn't scoped to a workspace).</span></li>
+        <li><b>Run</b><span><code>pnpm start</code>, open <code>/app</code>, click Run live. Each customer approves their hold at <code>/approve?job=A</code> (and B, C) with the test card <code>4035 5010 0000 0008</code>, any future expiry and CVC <code>123</code>.</span></li>
+      </ol>
+      <p>A full live run takes about 11 minutes; one payment takes about 7 seconds on testnet. Keep the machine awake during a run. <code>/api/run?mode=live&amp;jobs=1</code> runs a single short job in about a minute, for checking the rails.</p>
+    </section>
+
+    <section id="drills">
+      <h2>Drills and recovery</h2>
+      <p>The app's <b>Break it</b> panel works during a live or simulated run.</p>
+      <table>
+        <thead><tr><th>Drill</th><th>What happens</th><th>Recorded</th></tr></thead>
+        <tbody>
+          <tr><td>Overrun + slowdown</td><td>Fires the Kit 12 shock now.</td><td>every Kit 12 run</td></tr>
+          <tr><td>Fail after payment</td><td>The next request is paid, then fails. It still costs its price; METER tries once more.</td><td>a real one in <code>live-kit12-no-raise-run.jsonl</code></td></tr>
+          <tr><td>Lose an answer</td><td>The next paid request's connection drops before the answer. METER books it as paid and buys the step again.</td><td><code>live-lost-answer-drill.jsonl</code></td></tr>
+          <tr><td>Reprice over cap</td><td>A provider asks more than METER will pay. Nothing is paid.</td><td><code>metal-clearing-probe.json</code></td></tr>
+          <tr><td>Swap the payee</td><td>The next provider asked names another key as payee. Nothing is signed; it is blocked; the step is bought elsewhere.</td><td><code>live-swapped-payee-drill.jsonl</code></td></tr>
+        </tbody>
+      </table>
+      <h3>If the server dies mid-run</h3>
+      <p>Settle the run from its log and the wallets' own records. It captures what each wallet paid and cancels the rest. Running it twice changes nothing.</p>
+<pre><code>pnpm recover runs/&lt;run id&gt;.sqlite</code></pre>
+    </section>
+
+    <section id="checks">
+      <h2>Checks and proof</h2>
+      <p>Every claim is checked by a script against a recorded, hash-chained log. <code>GATES.md</code> lists all 17 acceptance gates with the command and the expected output.</p>
+      <table>
+        <thead><tr><th>Command</th><th>Checks</th><th>Prints</th></tr></thead>
+        <tbody>
+          <tr><td><code>pnpm test</code></td><td>Unit and engine tests, including every failure path.</td><td>108 passed</td></tr>
+          <tr><td><code>pnpm check:sim</code></td><td>10,000 random runs against every money rule.</td><td><code>SIM_OK</code></td></tr>
+          <tr><td><code>pnpm check:replay</code></td><td>The replay shows exactly what each recording says.</td><td><code>REPLAY_OK</code></td></tr>
+          <tr><td><code>pnpm check:evidence</code></td><td>The recorded runs and drills, the scenario's match with the Kit 12 brief, and no secrets in the repo.</td><td><code>CLAUDE_RUN_OK</code> and more</td></tr>
+          <tr><td><code>pnpm check:chain</code></td><td>Recomputes the main run's hash chain, re-sums its payments against every capture, and checks the comparison with Metal's settlement records that the run made live.</td><td><code>LIVE_RUN_EVIDENCE_OK</code></td></tr>
+        </tbody>
+      </table>
+      <h3>Recordings</h3>
+      <table>
+        <thead><tr><th>File in <code>research/</code></th><th>What it shows</th></tr></thead>
+        <tbody>
+          <tr><td><code>live-kit12-run.jsonl</code></td><td>Main run, 11 Nov: B raised $0.75 → $0.90 and charged $0.88; A $0.30; C $0.25.</td></tr>
+          <tr><td><code>live-kit12-no-raise-run.jsonl</code></td><td>The float couldn't fund a raise, so none was asked; all finished inside their first holds.</td></tr>
+          <tr><td><code>live-swapped-payee-drill.jsonl</code></td><td>A provider named another payee; $0 paid.</td></tr>
+          <tr><td><code>live-lost-answer-drill.jsonl</code></td><td>A paid answer was lost; booked as paid and bought again.</td></tr>
+          <tr><td><code>live-crash-recovery-drill.jsonl</code></td><td>The server was killed mid-job; recovery captured what was paid.</td></tr>
+          <tr><td><code>live-degraded-testnet-run.jsonl</code></td><td>A run during a bad stretch on Metal's testnet. It did not balance, and says so. Kept as a known limit.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="api">
+      <h2>HTTP API</h2>
+      <p>The server listens on <code>127.0.0.1:4378</code>. The app uses these; you can too.</p>
+      <table>
+        <thead><tr><th>Request</th><th>Does</th></tr></thead>
+        <tbody>
+          <tr><td><code>POST /api/run?mode=sim|live|replay</code></td><td>Starts a run. <code>recording=</code> picks a replay; <code>jobs=1</code> runs one short job; <code>shock=off</code> skips the shock.</td></tr>
+          <tr><td><code>GET /api/state</code></td><td>The current run: jobs, float, market, waiting holds and raises, result.</td></tr>
+          <tr><td><code>GET /api/events?after=n</code></td><td>The run's log as server-sent events, from event <code>n</code>, then live.</td></tr>
+          <tr><td><code>GET /api/recordings/:name</code></td><td>A recorded run's log as JSON lines: <code>kit12</code>, <code>kit12-no-raise</code>, <code>swapped-payee</code>, <code>lost-answer</code>, <code>crash-recovery</code>.</td></tr>
+          <tr><td><code>GET /api/holds/:job</code></td><td>A hold waiting for its customer, for the approval page.</td></tr>
+          <tr><td><code>POST /api/holds/:job/confirmed</code></td><td>The approval page reports a confirmed hold; the server re-reads it from Airwallex before trusting it.</td></tr>
+          <tr><td><code>POST /api/raises/:job</code></td><td>The customer's answer: <code>{"approve": true, "newTotal": "$0.90"}</code>. The total must match what they were shown.</td></tr>
+          <tr><td><code>POST /api/drills/:name</code></td><td><code>shock</code>, <code>fail-after-payment</code>, <code>lose-answer</code>, <code>reprice-over-cap</code>, <code>swap-payee</code>.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="layout">
+      <h2>Code layout</h2>
+      <table>
+        <thead><tr><th>Path</th><th>What it is</th></tr></thead>
+        <tbody>
+          <tr><td><code>packages/core</code></td><td>Money units (card cents, USDZ millionths) and the scenario loader.</td></tr>
+          <tr><td><code>packages/policy</code></td><td>The money rules every proposal passes through.</td></tr>
+          <tr><td><code>packages/ledger</code></td><td>The hash-chained event log.</td></tr>
+          <tr><td><code>packages/airwallex</code></td><td>Card holds: create, confirm on the hosted page, raise, capture, cancel.</td></tr>
+          <tr><td><code>packages/metal</code></td><td>A clearing wallet per job: deposit, pay over x402 with the payee lock, withdraw.</td></tr>
+          <tr><td><code>packages/ai</code></td><td>The one place METER calls Claude.</td></tr>
+          <tr><td><code>apps/providers</code></td><td>The five providers, each selling over x402 with its own clearing key.</td></tr>
+          <tr><td><code>apps/orchestrator</code></td><td>The engine, planners, replay, dashboard, landing and docs pages, approval page and recovery.</td></tr>
+          <tr><td><code>scenario/kit12.json</code></td><td>The Kit 12 numbers, checked against the official brief.</td></tr>
+          <tr><td><code>research/</code></td><td>The recorded runs and probes.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="limits">
+      <h2>Known limits</h2>
+      <ul class="list">
+        <li>The test customers are played by us: the holds use Airwallex's test card, and the raise in the main run was approved by clicking the dashboard's button.</li>
+        <li>Search and lookup have no web access. They are labelled as notes and never present anything as a retrieved result.</li>
+        <li>Whether a customer is asked to raise depends on the money at that moment: in one recorded run it was asked, in another it could not be funded and was not.</li>
+        <li>Metal's testnet has slow stretches. One run met repeated deposit timeouts and a deposit of unknown outcome; it did not balance and said so, charged every customer exactly what was paid, and stopped the largest job short. The wallet now looks such a deposit up and settles it; that fix is unit-tested but has not met the same failure live.</li>
+        <li>The readout of when unused float becomes claimable uses Metal's <code>contextOf</code> call and has not been seen live yet.</li>
+        <li>An approval page left open about an hour can fail with "Authentication failed". Recovery settles a crashed run; it doesn't resume it.</li>
+      </ul>
+    </section>
+  </article>
+</div>
+
+<footer>
+  <span>Airwallex sandbox and Metal testnet. Test money only.</span>
+  <a href="/">Home</a><a href="/app">App</a><a href="https://github.com/ronkenx9/meter">GitHub</a>
+</footer>
+
+<script>
+  // Highlight the section being read. No scroll listeners.
+  const links = new Map([...document.querySelectorAll("#toc a")].map((a) => [a.getAttribute("href").slice(1), a]));
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) { for (const a of links.values()) a.classList.remove("on"); links.get(e.target.id)?.classList.add("on"); }
+  }, { rootMargin: "-20% 0px -70% 0px" });
+  for (const id of links.keys()) { const s = document.getElementById(id); if (s) io.observe(s); }
+</script>
+</body>
+</html>

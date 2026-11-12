@@ -19,7 +19,7 @@ Every payment passes two locks. The engine checks the price against the job's mo
 
 ## Proof
 
-Every claim here is checked by a script against a recorded, hash-chained log. `pnpm check:evidence` reruns the offline checks; `pnpm check:chain` also compares the payments with Metal's own settlement records.
+Every claim here is checked by a script against a recorded, hash-chained log. `pnpm check:evidence` reruns the offline checks; `pnpm check:chain` recomputes the main run's hash chain and re-sums its payments against every capture, and checks the comparison with Metal's settlement records that the run made live.
 
 | Claim | Evidence | Check |
 |---|---|---|
@@ -33,7 +33,7 @@ Every claim here is checked by a script against a recorded, hash-chained log. `p
 | Every Airwallex card call Kit 12 needs: hold, raise, one partial capture, refused second and over-hold captures, cancel. | `research/airwallex-probe.json` | `packages/airwallex/scripts/check-probe.ts` |
 | The scenario matches the numbers in the official Kit 12 brief, parsed from the guide, not copied. | `scenario/kit12.json` | `scripts/check-scenario.mjs` |
 
-`GATES.md` lists all 17 acceptance gates with the command and expected output for each.
+`GATES.md` lists all 18 acceptance gates with the command and expected output for each.
 
 ## Run it
 
@@ -49,13 +49,14 @@ pnpm install
 pnpm start
 ```
 
-Open http://localhost:4378. The landing page explains the product and replays a run in place; **Open app** (or http://localhost:4378/app) is the operator's dashboard. There, click **Replay**. It plays back a real run on the Airwallex sandbox and Metal testnet from its hash-chained log, sped up, after checking the log's chain. The picker has four recordings: the Kit 12 run where a customer raises a hold, a Kit 12 run where no raise was needed, and two drills.
+Open http://localhost:4378. The landing page walks through a recorded live run in five steps (hold, fund, pay per step, shock, receipt), playing the run's own log as you scroll. **Open app** (http://localhost:4378/app) is the operator's dashboard, with the same five steps as a progress bar; there, click **Replay**. **Docs** (http://localhost:4378/docs) covers setup, the money rules and where they live in the code, the drills, the checks and the API. It plays back a real run on the Airwallex sandbox and Metal testnet from its hash-chained log, sped up, after checking the log's chain. The picker has four recordings: the Kit 12 run where a customer raises a hold, a Kit 12 run where no raise was needed, and two drills.
 
 Then check the money rules yourself:
 
 ```bash
 pnpm test          # 105 tests
 pnpm check:sim     # 10,000 random runs, about 25 seconds
+pnpm check:pages   # every page and link answers, and the walkthrough plays the real recording
 pnpm check:evidence
 ```
 
@@ -114,7 +115,7 @@ pnpm recover runs/<run id>.sqlite
 | `packages/metal` | A clearing wallet per job: deposit, pay over x402, withdraw |
 | `packages/ai` | The one place METER calls Claude |
 | `apps/providers` | The five providers, each selling over x402 with its own clearing key |
-| `apps/orchestrator` | The engine, Claude planner, rule planner, dashboard, approval page and recovery |
+| `apps/orchestrator` | The engine, Claude planner, rule planner, replay, landing page, dashboard, docs, approval page and recovery |
 
 ## Known limits
 

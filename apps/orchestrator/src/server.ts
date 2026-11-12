@@ -139,6 +139,14 @@ app.use(express.json());
 
 app.get("/", (_req, res) => void res.type("html").send(page("landing.html")));
 app.get("/app", (_req, res) => void res.type("html").send(page("index.html")));
+app.get("/docs", (_req, res) => void res.type("html").send(page("docs.html")));
+
+/** A recorded run's hash-chained log, as JSON lines. The landing page's walkthrough plays it; nothing is invented. */
+app.get("/api/recordings/:name", (req, res) => {
+  const file = RECORDINGS[req.params.name];
+  if (!file) return void res.status(404).json({ error: "no such recording", recordings: Object.keys(RECORDINGS) });
+  res.type("application/x-ndjson").set("Cache-Control", "public, max-age=300").send(readFileSync(root(file), "utf8"));
+});
 app.get("/approve", (_req, res) => void res.type("html").send(page("approve.html")));
 
 app.post("/api/run", async (req: Request, res: Response) => {
