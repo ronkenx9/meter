@@ -77,7 +77,7 @@ Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, p
 - [x] G14: 10,000 random runs through the real engine and rules, half of them planned by a planner proposing nonsense, break no money rule
   CHECK: node apps/orchestrator/scripts/check-sim.ts 10000
   EXPECT: SIM_OK 10000 runs, 0 violations
-  EVIDENCE: automatic-evidence=v1; definition-sha256=3faebd2e23f7cfeb970555d79c17346cfdcce6ed3533ffbd349e940f699b9101; exit=0; EXPECT=matched; output-sha256=8dd025f3b63597f366612c750324a0679c0e020c29d9526197a3419c349d463a; output-bytes=212; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=3faebd2e23f7cfeb970555d79c17346cfdcce6ed3533ffbd349e940f699b9101; exit=0; EXPECT=matched; output-sha256=578131de9f13c1428d0db3e21b0679551add2e33c393501b3785912a30b11a3d; output-bytes=212; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries
 
 - [x] G15: a live provider's offer named another payee: the wallet signed nothing, the provider was blocked, the step was bought elsewhere, and the charge equals what was paid
   CHECK: node scripts/check-drills.mjs swapped-payee research/live-swapped-payee-drill.jsonl

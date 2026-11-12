@@ -21,7 +21,7 @@ Drafted 2026-10-30, day 4 of the build. Sources are listed at the bottom; local 
 **Left, in order:**
 1. Demo video under 5 minutes (Creative Draft first), then submit by Nov 14.
 
-Pushed Nov 12 to https://github.com/ronkenx9/meter (public). CI passes on GitHub: install, typecheck, tests, 10,000 random runs, evidence checks. Dependabot opened a vitest 4 bump (PR #1); not merged.
+Pushed Nov 12 to https://github.com/ronkenx9/meter (public). CI passes on GitHub: install, typecheck, tests, 10,000 random runs, evidence checks. Dependency alerts fixed Nov 12: x402 2.28.0 → 2.29.0 (brings zod 4.6.7, patched) and vitest 3.2.4 → 4.1.12 (patched; tinypool no longer used). Tests, 10,000 random runs, all 17 gates and a one-job live run on Metal testnet pass on the new versions.
 
 **Measured, differs from the docs:** a payment takes about 7 s per wallet, not 3 s; a full run with real Claude takes about 11 minutes. Keep the Mac awake: sleep mid-run froze one for 10 minutes.
 
