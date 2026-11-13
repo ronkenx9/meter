@@ -6,32 +6,32 @@
 <title>METER · Docs</title>
 <meta name="description" content="How METER works, how to run it with or without keys, the money rules and where they live in the code, the drills, the checks and the API." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root { --g:#F5F5F5; --t2:rgba(0,0,0,.56); --t3:rgba(0,0,0,.4); --rule:rgba(0,0,0,.12); --fill:rgba(0,0,0,.04); --clay:#E8552D; --clay-deep:#B8401C; }
+  :root { --g:#fafafa; --t2:#525252; --t3:#737373; --rule:rgba(23,23,23,.1); --fill:rgba(0,0,0,.04); --clay:#E8552D; --clay-deep:#B8401C; }
   * { box-sizing:border-box; }
-  html { scroll-behavior:smooth; scroll-padding-top:96px; }
+  html { scroll-behavior:smooth; scroll-padding-top:88px; }
   body { margin:0; background:var(--g); color:#000; font:500 16px/24px "Inter Tight",system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
   a { color:inherit; }
   a:focus-visible, button:focus-visible { outline:2px solid #000; outline-offset:3px; }
-  .nav-wrap { position:fixed; top:16px; left:0; right:0; z-index:50; display:flex; justify-content:center; padding:0 16px; pointer-events:none; }
-  .nav { pointer-events:auto; display:flex; align-items:center; gap:4px; height:52px; padding:4px 4px 4px 24px; border-radius:26px; background:rgba(225,225,225,.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); width:min(862px,100%); }
+  .nav-wrap { position:sticky; top:0; z-index:50; background:var(--g); border-bottom:1px solid var(--rule); }
+  .nav { display:flex; align-items:center; gap:4px; height:64px; padding:0 40px; max-width:1180px; margin:0 auto; }
   .brand { display:flex; align-items:center; gap:9px; font-size:17px; letter-spacing:-.03em; margin-right:auto; font-weight:600; text-decoration:none; }
   .nav ul { display:flex; list-style:none; margin:0; padding:0; gap:4px; }
-  .nav li a { display:flex; align-items:center; height:44px; padding:4px 16px; font-size:14px; border-radius:22px; text-decoration:none; }
-  .nav li a:hover { background:rgba(0,0,0,.05); } .nav li a[aria-current="page"] { background:rgba(0,0,0,.07); }
-  .btn { display:inline-flex; align-items:center; justify-content:center; height:44px; padding:4px 24px; border-radius:999px; font-size:14px; background:#000; color:#F5F5F5; text-decoration:none; }
+  .nav li a { display:block; padding:6px 12px; font-size:14px; border-radius:8px; text-decoration:none; color:var(--t2); }
+  .nav li a:hover { background:#f0f0f0; color:#171717; } .nav li a[aria-current="page"] { color:#171717; background:#f0f0f0; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; height:36px; margin-left:12px; padding:0 16px; border-radius:8px; font-size:14px; font-weight:500; background:#171717; color:#fafafa; text-decoration:none; }
 
-  .layout { max-width:1180px; margin:0 auto; padding:120px 40px 120px; display:grid; grid-template-columns:220px minmax(0,1fr); gap:56px; }
-  aside { position:sticky; top:104px; align-self:start; max-height:calc(100vh - 128px); overflow:auto; }
+  .layout { max-width:1180px; margin:0 auto; padding:48px 40px 120px; display:grid; grid-template-columns:220px minmax(0,1fr); gap:56px; }
+  aside { position:sticky; top:88px; align-self:start; max-height:calc(100vh - 128px); overflow:auto; }
   aside ol { list-style:none; margin:0; padding:0; display:grid; gap:2px; }
   aside a { display:block; padding:6px 12px; border-radius:10px; font-size:14px; color:var(--t2); text-decoration:none; }
   aside a:hover { background:rgba(0,0,0,.04); color:#000; }
   aside a.on { background:#fff; color:#000; }
-  aside .label { font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--t3); padding:14px 12px 6px; }
+  aside .label { font-size:13px; color:var(--t3); padding:16px 12px 4px; }
 
   article { min-width:0; }
-  .eyebrow { font-size:10px; line-height:16px; letter-spacing:.06em; text-transform:uppercase; color:var(--t3); }
+  .eyebrow { font-size:14px; line-height:20px; color:var(--t3); }
   h1 { margin:16px 0 0; font-weight:500; font-size:44px; line-height:1; letter-spacing:-.03em; }
   .lede { margin:16px 0 0; color:var(--t2); font-size:18px; line-height:26px; max-width:640px; }
   section { padding-top:72px; }
@@ -40,8 +40,8 @@
   p { margin:14px 0 0; max-width:720px; color:#2a2a2a; }
   ul.list, ol.list { margin:14px 0 0; padding-left:20px; max-width:720px; color:#2a2a2a; }
   ul.list li, ol.list li { margin:6px 0; }
-  code { font:400 .88em ui-monospace,SFMono-Regular,Menlo,monospace; background:rgba(0,0,0,.06); padding:.1em .35em; border-radius:6px; }
-  pre { margin:16px 0 0; background:#141414; color:#EDEDED; border-radius:18px; padding:18px 20px; overflow:auto; font:400 13.5px/22px ui-monospace,SFMono-Regular,Menlo,monospace; max-width:760px; }
+  code { font:400 .88em "Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace; background:rgba(0,0,0,.06); padding:.1em .35em; border-radius:6px; }
+  pre { margin:16px 0 0; background:#141414; color:#EDEDED; border-radius:18px; padding:18px 20px; overflow:auto; font:400 13.5px/22px "Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace; max-width:760px; }
   pre code { background:none; padding:0; color:inherit; font-size:inherit; }
   .card { margin-top:20px; background:#fff; border-radius:24px; padding:24px 26px; max-width:760px; }
   .card p:first-child { margin-top:0; }
@@ -61,7 +61,7 @@
 
   @media (max-width:900px) {
     .nav ul { display:none; } .nav { padding-left:18px; }
-    .layout { grid-template-columns:1fr; padding:104px 20px 80px; gap:24px; }
+    .layout { grid-template-columns:1fr; padding:32px 16px 80px; gap:24px; } .nav { padding:0 16px; }
     aside { position:static; max-height:none; background:#fff; border-radius:18px; padding:8px; }
     aside ol { grid-template-columns:1fr 1fr; } aside .label { grid-column:1 / -1; padding-top:8px; }
     h1 { font-size:34px; } section { padding-top:56px; }

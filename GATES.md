@@ -22,7 +22,7 @@ Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, p
 - [x] G4: .env is git-ignored and no tracked or untracked-unignored file holds a credential-shaped value
   CHECK: node scripts/check-secrets.mjs
   EXPECT: SECRETS_OK
-  EVIDENCE: automatic-evidence=v1; definition-sha256=d5745ed02f7bde11630a9ef2d480f159583fb4976894d83abf957945bee078aa; exit=0; EXPECT=matched; output-sha256=a5f27dfd29bc173ea3396f972b99be2bc09584bc89ab1613cf370e24e18dade3; output-bytes=23; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=d5745ed02f7bde11630a9ef2d480f159583fb4976894d83abf957945bee078aa; exit=0; EXPECT=matched; output-sha256=7ec93bea6c72d6551ee94611cec4cf55b1125bed38f803fa3c8b28b2c64ab2fa; output-bytes=23; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries
 
 - [x] G5: Metal's testnet facilitator is up and advertises a bajillion clearing deployment on eip155:63825
   CHECK: node scripts/probe-metal.mjs
@@ -77,7 +77,7 @@ Scope: a typed pnpm monorepo with tested unit conversion, the Kit 12 scenario, p
 - [x] G14: 10,000 random runs through the real engine and rules, half of them planned by a planner proposing nonsense, break no money rule
   CHECK: node apps/orchestrator/scripts/check-sim.ts 10000
   EXPECT: SIM_OK 10000 runs, 0 violations
-  EVIDENCE: automatic-evidence=v1; definition-sha256=3faebd2e23f7cfeb970555d79c17346cfdcce6ed3533ffbd349e940f699b9101; exit=0; EXPECT=matched; output-sha256=e2d23b3ee90a615a10d991da07ec9857cb3727d9898879b88f98a87ea03eba8d; output-bytes=212; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=3faebd2e23f7cfeb970555d79c17346cfdcce6ed3533ffbd349e940f699b9101; exit=0; EXPECT=matched; output-sha256=8dc37d40008bdad4ba43f66fabbfef0535f3554b584f9c90329368ffe73656de; output-bytes=212; shell=/bin/sh; cwd=/Users/gadgetplug/Documents/vibecoding/meter; path=56ef7a73ab0b/24 entries
 
 - [x] G15: a live provider's offer named another payee: the wallet signed nothing, the provider was blocked, the step was bought elsewhere, and the charge equals what was paid
   CHECK: node scripts/check-drills.mjs swapped-payee research/live-swapped-payee-drill.jsonl

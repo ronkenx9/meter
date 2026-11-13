@@ -1,9 +1,11 @@
 // The site serves what it links to: the landing page, the app, the docs, and the recording the walkthrough plays,
-// byte for byte. Starts its own server on a spare port. Usage: check-pages.mjs
+// byte for byte. Starts its own server on a free port. Usage: check-pages.mjs
 import { spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { createServer } from "node:net";
 
-const PORT = 4391;
+// A port nothing else is using, so the check never talks to another program's server.
+const PORT = await new Promise((resolve) => { const s = createServer().listen(0, "127.0.0.1", () => { const { port } = s.address(); s.close(() => resolve(port)); }); });
 const base = `http://127.0.0.1:${PORT}`;
 const server = spawn(process.execPath, ["apps/orchestrator/src/server.ts"], { env: { ...process.env, PORT: String(PORT) }, stdio: "ignore" });
 const fail = (m) => { server.kill(); console.error(m); process.exit(1); };
